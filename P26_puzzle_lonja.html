@@ -122,28 +122,17 @@
         <div id="completeMessage">¡Puzzle Completado! 🎉</div>
     </div>
 
-    <script>
+   <script>
     const puzzleCanvas = document.getElementById('puzzleCanvas');
     const ctx = puzzleCanvas.getContext('2d');
     const effectCanvas = document.getElementById('effectCanvas');
     const effectCtx = effectCanvas.getContext('2d');
     
     const image = new Image();
-    const imageSrc = "imagenes_puzzles/P26_lonja.jpg"; // <--- CAMBIA ESTO PARA CADA PUZZLE
+    // *** CAMBIO 1: Ruta de la imagen con la barra inicial '/' ***
+    const imageSrc = "/imagenes_puzzles/P26_lonja.jpg"; 
 
-    // Asegura que la imagen se cargue completamente antes de inicializar
-    image.onload = () => {
-        // Redimensiona los canvases antes de iniciar el puzzle
-        resizeCanvas(); 
-        init(); 
-    };
-    image.onerror = () => {
-        console.error("Error al cargar la imagen:", imageSrc);
-        // Puedes mostrar un mensaje de error al usuario aquí
-        alert("No se pudo cargar la imagen del puzzle. Intenta recargar la página.");
-    };
-    image.src = imageSrc; // ¡Inicia la carga de la imagen!
-
+    // Variables globales que definen el estado del puzzle y sus elementos
     const restartBtn = document.getElementById('restartBtn');
     const pauseBtn = document.getElementById('pauseBtn');
     const completeMsg = document.getElementById('completeMessage');
@@ -159,18 +148,32 @@
     let paused = false;
     let puzzleEnded = false; 
 
+    // Esta función se ejecuta cuando la imagen ha cargado completamente
+    image.onload = () => {
+        // Redimensiona los canvases ANTES de llamar a init()
+        resizeCanvas(); 
+        // Llama a init() SOLAMENTE cuando la imagen ha cargado y el canvas tiene su tamaño final
+        init(); 
+    };
+    image.onerror = () => {
+        console.error("Error al cargar la imagen:", imageSrc);
+        alert("No se pudo cargar la imagen del puzzle. Intenta recargar la página.");
+    };
+    // *** CAMBIO 2: Inicia la carga de la imagen DESPUÉS de definir 'onload' y 'onerror' ***
+    image.src = imageSrc;
+
     function resizeCanvas() {
-        // Asegúrate de que el wrapper tenga dimensiones antes de obtenerlas
         const wrapperRect = puzzleWrapper.getBoundingClientRect();
         
-        // Ajusta las dimensiones del canvas a las del wrapper
+        // Ajusta las dimensiones de ambos canvases al tamaño del wrapper
         puzzleCanvas.width = wrapperRect.width;
         puzzleCanvas.height = wrapperRect.height;
         effectCanvas.width = wrapperRect.width;
         effectCanvas.height = wrapperRect.height;
 
-        // Recalcula el tamaño de las piezas y redibuja si la imagen ya cargó
-        if (image.complete && image.naturalWidth > 0) {
+        // Si las piezas ya han sido creadas (es decir, init ya se ha ejecutado antes),
+        // recalcula su tamaño y redibuja. Esto es útil para el redimensionamiento de la ventana.
+        if (puzzlePieces.length > 0) {
             pieceWidth = puzzleCanvas.width / cols;
             pieceHeight = puzzleCanvas.height / rows;
             drawPuzzle(); 
@@ -184,18 +187,20 @@
         paused = false;
         pauseBtn.textContent = '⏸️ Pausar';
         timerDisplay.textContent = 'Tiempo: 00:00';
-        clearInterval(timerInterval);
+        clearInterval(timerInterval); // Limpia cualquier temporizador previo
 
-        // Asegúrate de que pieceWidth y pieceHeight se calculen aquí después del redimensionado
-        // Esto es crucial para que las piezas tengan el tamaño correcto
+        // *** CAMBIO 3: Recalcula pieceWidth y pieceHeight aquí. ***
+        // Esto es crucial porque init() se llama *después* de que resizeCanvas() haya configurado
+        // el tamaño del canvas en el 'image.onload'.
         pieceWidth = puzzleCanvas.width / cols;
         pieceHeight = puzzleCanvas.height / rows;
 
-        createPieces();
-        shufflePieces();
-        drawPuzzle();
+        createPieces(); // Crea las piezas con los tamaños correctos
+        shufflePieces(); // Mezcla las piezas
+        drawPuzzle(); // Dibuja el puzzle mezclado
+        
         startTime = Date.now();
-        timerInterval = setInterval(updateTimer, 1000);
+        timerInterval = setInterval(updateTimer, 1000); // Inicia el temporizador
     }
 
     function createPieces() {
@@ -203,9 +208,9 @@
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
                 puzzlePieces.push({
-                    x: c * pieceWidth,
+                    x: c * pieceWidth, // Posición inicial de la pieza (se mezclará después)
                     y: r * pieceHeight,
-                    originalX: c * pieceWidth,
+                    originalX: c * pieceWidth, // Posición correcta en el puzzle resuelto
                     originalY: r * pieceHeight,
                     width: pieceWidth,
                     height: pieceHeight,
@@ -219,37 +224,43 @@
     }
 
     function shufflePieces() {
+        // Algoritmo de mezcla de Fisher-Yates
         for (let i = puzzlePieces.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [puzzlePieces[i], puzzlePieces[j]] = [puzzlePieces[j], puzzlePieces[i]];
+            // Intercambia posiciones (x,y) de las piezas
+            [puzzlePieces[i].x, puzzlePieces[j].x] = [puzzlePieces[j].x, puzzlePieces[i].x];
+            [puzzlePieces[i].y, puzzlePieces[j].y] = [puzzlePieces[j].y, puzzlePieces[i].y];
         }
     }
 
     function drawPuzzle() {
+        // Limpia ambos canvases antes de redibujar
         ctx.clearRect(0, 0, puzzleCanvas.width, puzzleCanvas.height);
         effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
 
         puzzlePieces.forEach(piece => {
             ctx.drawImage(
                 image,
-                // Coordenadas de origen en la imagen (para la parte de la imagen)
+                // Coordenadas y dimensiones de la parte de la imagen a copiar
                 piece.originalX * (image.naturalWidth / puzzleCanvas.width), 
                 piece.originalY * (image.naturalHeight / puzzleCanvas.height), 
                 piece.width * (image.naturalWidth / puzzleCanvas.width), 
                 piece.height * (image.naturalHeight / puzzleCanvas.height), 
-                // Coordenadas de destino en el canvas (donde se dibujará la pieza)
+                // Coordenadas y dimensiones donde dibujar la pieza en el canvas
                 piece.x, 
                 piece.y, 
                 piece.width, 
                 piece.height 
             );
+            // Dibuja el borde de la pieza (según tu instrucción de "igual grosor")
             ctx.strokeStyle = '#555'; 
-            ctx.lineWidth = 1; 
+            ctx.lineWidth = 1; // El grosor del borde es constante
             ctx.strokeRect(piece.x, piece.y, piece.width, piece.height);
         });
     }
 
     function getPieceAt(x, y) {
+        // Itera al revés para encontrar la pieza superior (si hay solapamiento)
         for (let i = puzzlePieces.length - 1; i >= 0; i--) {
             const piece = puzzlePieces[i];
             if (x > piece.x && x < piece.x + piece.width &&
@@ -261,35 +272,37 @@
     }
 
     function swapPieces(p1, p2) {
+        // Intercambia las coordenadas de posición de las dos piezas
         [p1.x, p2.x] = [p2.x, p1.x];
         [p1.y, p2.y] = [p2.y, p1.y];
-        drawPuzzle();
+        drawPuzzle(); // Redibuja el puzzle después del intercambio
         if (checkWin()) {
-            endPuzzle();
+            endPuzzle(); // Si se ha ganado, finaliza el puzzle
         }
     }
 
     function checkWin() {
+        // Comprueba si todas las piezas están en su posición original
         for (let i = 0; i < puzzlePieces.length; i++) {
             const piece = puzzlePieces[i];
             if (piece.x !== piece.originalX || piece.y !== piece.originalY) {
-                return false;
+                return false; // Si alguna pieza no está en su lugar, no se ha ganado
             }
         }
-        return true;
+        return true; // Todas las piezas están en su lugar
     }
 
     function endPuzzle() {
         puzzleEnded = true;
-        clearInterval(timerInterval);
-        completeMsg.style.display = 'block';
-        puzzleWrapper.style.borderColor = 'gold';
-        // AÑADE ESTA LÍNEA para notificar a la página padre
+        clearInterval(timerInterval); // Detiene el temporizador
+        completeMsg.style.display = 'block'; // Muestra el mensaje de completado
+        puzzleWrapper.style.borderColor = 'gold'; // Cambia el borde a dorado
+        // *** Esta línea ya estaba, ¡genial! Asegura la comunicación con la página padre ***
         window.parent.postMessage('puzzle-completed', '*');
     }
 
     function updateTimer() {
-        if (paused || puzzleEnded) return;
+        if (paused || puzzleEnded) return; // Si está pausado o terminado, no actualiza
         const currentTime = Date.now();
         const elapsedTime = Math.floor((currentTime - startTime) / 1000);
         const minutes = Math.floor(elapsedTime / 60);
@@ -297,18 +310,20 @@
         timerDisplay.textContent = `Tiempo: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
 
+    // Funciones de manejo de eventos para arrastrar y soltar con ratón
     function handleMouseDown(e) {
         if (paused || puzzleEnded) return;
         const rect = puzzleCanvas.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        currentPiece = getPieceAt(x, y);
+        currentPiece = getPieceAt(x, y); // Obtiene la pieza en la posición del clic
         if (currentPiece) {
             offsetX = x - currentPiece.x;
             offsetY = y - currentPiece.y;
+            // Mueve la pieza actual al final del array para que se dibuje encima
             puzzlePieces = puzzlePieces.filter(p => p !== currentPiece);
             puzzlePieces.push(currentPiece);
-            drawPuzzle();
+            drawPuzzle(); // Redibuja con la pieza seleccionada encima
             effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
         }
     }
@@ -319,12 +334,12 @@
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
-        currentPiece.x = x - offsetX;
+        currentPiece.x = x - offsetX; // Actualiza la posición de la pieza arrastrada
         currentPiece.y = y - offsetY;
-        drawPuzzle();
+        drawPuzzle(); // Redibuja el puzzle con la pieza en su nueva posición
 
         effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
-        const targetPiece = getPieceAt(x, y);
+        const targetPiece = getPieceAt(x, y); // Resalta la pieza sobre la que se arrastra
         if (targetPiece && targetPiece !== currentPiece) {
             effectCtx.strokeStyle = 'rgba(0, 255, 0, 0.7)';
             effectCtx.lineWidth = 3;
@@ -343,14 +358,15 @@
         const targetPiece = getPieceAt(mouseX, mouseY);
 
         if (targetPiece && targetPiece !== currentPiece) {
-            swapPieces(currentPiece, targetPiece);
+            swapPieces(currentPiece, targetPiece); // Si se soltó sobre otra pieza, intercámbialas
         } 
-        currentPiece = null;
+        currentPiece = null; // Reinicia la pieza arrastrada
         drawPuzzle();
     }
 
+    // Funciones de manejo de eventos para arrastrar y soltar con táctil
     function handleTouchStart(e) {
-        e.preventDefault();
+        e.preventDefault(); // Previene el scroll por defecto
         const touch = e.touches[0];
         handleMouseDown({ clientX: touch.clientX, clientY: touch.clientY });
     }
@@ -363,40 +379,45 @@
 
     function handleTouchEnd(e) {
         e.preventDefault();
-        handleMouseUp({});
+        handleMouseUp({}); // Simula un 'mouseup' al levantar el dedo
     }
 
+    // Asignación de eventos de ratón
     puzzleCanvas.addEventListener('mousedown', handleMouseDown);
     puzzleCanvas.addEventListener('mousemove', handleMouseMove);
     puzzleCanvas.addEventListener('mouseup', handleMouseUp);
-    puzzleCanvas.addEventListener('mouseleave', handleMouseUp);
+    puzzleCanvas.addEventListener('mouseleave', handleMouseUp); // Para cuando el ratón sale del canvas
 
+    // Asignación de eventos táctiles
     puzzleCanvas.addEventListener('touchstart', handleTouchStart);
     puzzleCanvas.addEventListener('touchmove', handleTouchMove);
     puzzleCanvas.addEventListener('touchend', handleTouchEnd);
-    puzzleCanvas.addEventListener('touchcancel', handleTouchEnd);
+    puzzleCanvas.addEventListener('touchcancel', handleTouchEnd); // Si la interacción táctil se cancela
 
-    restartBtn.addEventListener('click', init);
+    // Eventos de botones
+    restartBtn.addEventListener('click', init); // Reinicia el puzzle
     pauseBtn.addEventListener('click', () => {
-        paused = !paused;
+        paused = !paused; // Cambia el estado de pausa
         if (paused) {
-            pauseBtn.textContent = '▶️ Reanudar';
-            clearInterval(timerInterval);
+            pauseBtn.textContent = '▶️ Reanudar'; // Cambia el texto del botón
+            clearInterval(timerInterval); // Detiene el temporizador
         } else {
-            pauseBtn.textContent = '⏸️ Pausar';
-            // Para ajustar el tiempo al reanudar
+            pauseBtn.textContent = '⏸️ Pausar'; // Cambia el texto del botón
+            // Reajusta el tiempo para que el temporizador no salte al reanudar
             const currentTime = Date.now();
             const currentElapsedTime = Math.floor((currentTime - startTime) / 1000);
             startTime = Date.now() - currentElapsedTime * 1000;
-            timerInterval = setInterval(updateTimer, 1000);
+            timerInterval = setInterval(updateTimer, 1000); // Reanuda el temporizador
         }
     });
 
-    // Escucha el evento de redimensionamiento de la ventana
+    // Escucha el evento de redimensionamiento de la ventana para ajustar el canvas
     window.addEventListener('resize', resizeCanvas);
-    // Llama a resizeCanvas inicialmente para establecer el tamaño correcto
-    // Esto se ejecutará ANTES de que la imagen cargue, lo cual está bien.
-    // El 'init' se encarga de re-calcular piezas una vez la imagen esté lista.
+    // *** CAMBIO 4: Llama a resizeCanvas() inicialmente aquí, fuera del 'image.onload'. ***
+    // Esto asegura que los canvases tengan un tamaño válido ANTES de que la imagen cargue,
+    // previniendo que pieceWidth y pieceHeight se calculen como 0 al inicio.
+    // La función init() sigue siendo llamada en image.onload para asegurar que
+    // el puzzle se crea solo cuando la imagen está lista.
     resizeCanvas(); 
 </script>
 </body>
