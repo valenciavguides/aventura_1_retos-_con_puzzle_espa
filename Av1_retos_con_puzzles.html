@@ -5,146 +5,146 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Reto Valencia be Guides</title>
 <style>
- body {
-  font-family: "Book Antiqua", Palatino, serif;
-  margin: 1em; /* Mantenemos margen relativo */
-  background: #fff;
-  color: #222;
-  font-size: 16px; /* Asegura un tamaño base para 'em' */
+ body {
+  font-family: "Book Antiqua", Palatino, serif;
+  margin: 1em; /* Mantenemos margen relativo */
+  background: #fff;
+  color: #222;
+  font-size: 16px; /* Asegura un tamaño base para 'em' */
 }
-  h2 { /* Este es el título visible en la página */
-    margin-bottom: 0.8em;
-  }
-  h3 {
-    margin-bottom: 0.2em;
-  }
-  #reto {
-    border: 3px solid #ccc;
-    border-radius: 8px;
-    padding: 1em;
-    margin-bottom: 1em;
-    position: relative;
-    min-height: 220px;
-  }
-  .respuesta {
-    margin: 0.4em 0;
-    font-size: 1.1em;
-    display: flex;
-    align-items: center;
-  }
-  .respuesta input[type="radio"] {
-    margin-right: 0.7em;
-    transform: scale(1.3);
-    cursor: pointer;
-  }
-  .respuesta input[type="checkbox"] {
-    margin-right: 0.7em;
-    transform: scale(1.3);
-    cursor: pointer;
-  }
-  .respuesta input[type="text"] {
-    flex-grow: 1;
-    font-size: 1.1em;
-    padding: 0.3em 0.5em;
-    border-radius: 4px;
-    border: 1px solid #999;
-  }
-  /* Contenedor para los botones para que estén en la misma línea */
-  #button-container {
-    display: flex;
-    flex-wrap: wrap; /* Permite que los botones salten de línea si no hay espacio */
-    gap: 1em; /* Espacio entre los botones */
-    margin-top: 1em;
-    justify-content: center; /* Centra los botones horizontalmente */
-    align-items: center; /* Alinea verticalmente los botones si tienen alturas diferentes */
-  }
+  h2 { /* Este es el título visible en la página */
+    margin-bottom: 0.8em;
+  }
+  h3 {
+    margin-bottom: 0.2em;
+  }
+  #reto {
+    border: 3px solid #ccc;
+    border-radius: 8px;
+    padding: 1em;
+    margin-bottom: 1em;
+    position: relative;
+    min-height: 220px;
+  }
+  .respuesta {
+    margin: 0.4em 0;
+    font-size: 1.1em;
+    display: flex;
+    align-items: center;
+  }
+  .respuesta input[type="radio"] {
+    margin-right: 0.7em;
+    transform: scale(1.3);
+    cursor: pointer;
+  }
+  .respuesta input[type="checkbox"] {
+    margin-right: 0.7em;
+    transform: scale(1.3);
+    cursor: pointer;
+  }
+  .respuesta input[type="text"] {
+    flex-grow: 1;
+    font-size: 1.1em;
+    padding: 0.3em 0.5em;
+    border-radius: 4px;
+    border: 1px solid #999;
+  }
+  /* Contenedor para los botones para que estén en la misma línea */
+  #button-container {
+    display: flex;
+    flex-wrap: wrap; /* Permite que los botones salten de línea si no hay espacio */
+    gap: 1em; /* Espacio entre los botones */
+    margin-top: 1em;
+    justify-content: center; /* Centra los botones horizontalmente */
+    align-items: center; /* Alinea verticalmente los botones si tienen alturas diferentes */
+  }
 
-  button.btn, button#btnMostrarRespuesta, button#btnNextAfterReto {
-    padding: 0.6em 1.2em;
-    font-size: 1.1em;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    background-color: #0077cc;
-    color: white;
-    user-select: none;
-  }
-  button.btn:disabled {
-    background-color: #999;
-    cursor: not-allowed;
-  }
-  #btnMostrarRespuesta, #btnNextAfterReto {
-    display: none; /* Por defecto ocultos, su visibilidad se controla con JS */
-    background-color: #28a745;
-  }
-  #respuestaCorrectaTexto {
-    margin-top: 1em;
-    font-weight: bold;
-    color: #2d662d;
-    font-size: 1.1em;
-    text-align: center; /* Centra el texto de la respuesta */
-  }
-  #fuegos {
-    pointer-events: none;
-    position: absolute;
-    top: 0; left: 50%;
-    transform: translateX(-50%);
-    width: 150px; /* Ancho del área donde se muestran los fuegos */
-    height: 150px; /* Alto del área donde se muestran los fuegos */
-    z-index: 10;
-  }
-  /* Border colors for correct/incorrect */
-  #reto.correct {
-    border-color: #28a745;
-  }
-  #reto.incorrect {
-    border-color: #c00;
-  }
+  button.btn, button#btnMostrarRespuesta, button#btnNextAfterReto {
+    padding: 0.6em 1.2em;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background-color: #0077cc;
+    color: white;
+    user-select: none;
+  }
+  button.btn:disabled {
+    background-color: #999;
+    cursor: not-allowed;
+  }
+  #btnMostrarRespuesta, #btnNextAfterReto {
+    display: none; /* Por defecto ocultos, su visibilidad se controla con JS */
+    background-color: #28a745;
+  }
+  #respuestaCorrectaTexto {
+    margin-top: 1em;
+    font-weight: bold;
+    color: #2d662d;
+    font-size: 1.1em;
+    text-align: center; /* Centra el texto de la respuesta */
+  }
+  #fuegos {
+    pointer-events: none;
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 150px; /* Ancho del área donde se muestran los fuegos */
+    height: 150px; /* Alto del área donde se muestran los fuegos */
+    z-index: 10;
+  }
+  /* Border colors for correct/incorrect */
+  #reto.correct {
+    border-color: #28a745;
+  }
+  #reto.incorrect {
+    border-color: #c00;
+  }
 
-  /* Media Query para móviles en horizontal: oculta el h2 y ajusta el espacio */
-  @media (max-width: 800px) and (orientation: landscape) {
-    h2 {
-      display: none; /* Oculta el título "Reto Valencia be Guides" */
-    }
-    body {
-      margin: 0.5em; /* Reduce los márgenes del body para ganar espacio */
-    }
-    #reto {
-      min-height: 180px; /* Ajusta la altura mínima del reto */
-      padding: 0.8em; /* Reduce el padding del reto */
-    }
-   /* Botones de enviar, siguiente, mostrar respuesta */
+  /* Media Query para móviles en horizontal: oculta el h2 y ajusta el espacio */
+  @media (max-width: 800px) and (orientation: landscape) {
+    h2 {
+      display: none; /* Oculta el título "Reto Valencia be Guides" */
+    }
+    body {
+      margin: 0.5em; /* Reduce los márgenes del body para ganar espacio */
+    }
+    #reto {
+      min-height: 180px; /* Ajusta la altura mínima del reto */
+      padding: 0.8em; /* Reduce el padding del reto */
+    }
+   /* Botones de enviar, siguiente, mostrar respuesta */
 #btnEnviar, #btnNext, #btnMostrarRespuesta {
-  padding: 0.8em 1.5em; /* Padding relativo */
-  font-size: 1em; /* Tamaño de fuente relativo al body */
-  border: 2px solid #007bff;
-  border-radius: 5px;
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
-  margin-top: 1em; /* Margen relativo */
-  transition: background-color 0.3s ease;
-  display: inline-block; /* Asegura que los botones se comporten bien en línea */
-  text-align: center; /* Centra el texto en botones */
+  padding: 0.8em 1.5em; /* Padding relativo */
+  font-size: 1em; /* Tamaño de fuente relativo al body */
+  border: 2px solid #007bff;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  margin-top: 1em; /* Margen relativo */
+  transition: background-color 0.3s ease;
+  display: inline-block; /* Asegura que los botones se comporten bien en línea */
+  text-align: center; /* Centra el texto en botones */
 }
 #btnMostrarRespuesta {
-  background-color: #f0ad4e;
-  border-color: #f0ad4e;
+  background-color: #f0ad4e;
+  border-color: #f0ad4e;
 }
 #btnMostrarRespuesta:hover {
-  background-color: #ec971f;
-  border-color: #ec971f;
+  background-color: #ec971f;
+  border-color: #ec971f;
 }
 
-  /* Estilos específicos para el iframe del puzzle */
-  #puzzleIframe {
-    width: 100%;
-    height: 400px; /* Ajusta la altura según sea necesario */
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    display: block; /* Para asegurarse de que ocupe el ancho completo */
-    margin: 1em auto;
-  }
+  /* Estilos específicos para el iframe del puzzle */
+  #puzzleIframe {
+    width: 100%;
+    height: 400px; /* Ajusta la altura según sea necesario */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    display: block; /* Para asegurarse de que ocupe el ancho completo */
+    margin: 1em auto;
+  }
 </style>
 </head>
 <body>
@@ -153,8 +153,8 @@
 <div id="reto" tabindex="0"></div>
 
 <div id="button-container">
-  <button id="btnMostrarRespuesta">Respuesta Correcta</button>
-  <button id="btnNextAfterReto">Siguiente</button>
+  <button id="btnMostrarRespuesta">Respuesta Correcta</button>
+  <button id="btnNextAfterReto">Siguiente</button>
 </div>
 <div id="respuestaCorrectaTexto"></div>
 
@@ -162,225 +162,213 @@
 <div id="fuegos"></div>
 
 <script>
-window.addEventListener('message', function(event) {
-      if (event.data === 'puzzle-completed') {
-        console.log('Puzzle completado. Navegando al siguiente reto...');
-        // Aquí debes poner la URL del siguiente reto
-        window.location.href = 'URL_DEL_SIGUIENTE_RETO.html'; 
-    } else if (event.data === 'puzzle-timeout') {
-        console.log('Tiempo del puzzle agotado. Podrías redirigir a un mensaje de intento fallido o al mismo reto.');
-        // Aquí puedes redirigir a una página de "inténtalo de nuevo" o al mismo reto
-        // window.location.href = 'URL_PARA_REINTENTAR_O_MENSAJE_FALLO.html';
-        window.location.href = 'URL_DEL_MISMO_RETO_PARA_REINTENTAR.html'; // Por ejemplo, recargar el mismo puzzle
-    }
-});
 /* --- Datos retos --- */
 const retos = [
- {
-    tipo: "opcion",
-    pregunta: "1. ¿Cuántas Aventuras pueden hacerse con Valencia be Guides?",
-    opciones: ["4", "5", "6", "7"],
-    correctas: ["7"],
-    multiple: false
-  },
-  {
-    tipo: "opcion",
-    pregunta: "2. ¿Sabría decirme cómo se llaman estas Torres?",
-    opciones: ["Torres de Quart", "Torres de Serranos", "Torre del Miguelete", "Torre de Santa catalina"],
-    correctas: ["Torres de Serranos"],
-    multiple: false
-  },
-  {
-    tipo: "opcion",
-    pregunta: "3. ¿En la cumbre de las torres ondea la bandera de Valencia: sus colores se componen de rojo, amarillo y… ?",
-    opciones: ["Violeta", "Verde", "Azul"],
-    correctas: ["Azul"],
-    multiple: false
-  },
-  {
-    tipo: "texto",
-    pregunta: "4. ¿Sabría decirme el nombre de la calle?",
-    correctaTexto: "Calle Muro de Santa Ana"
-  },
-  {
-    tipo: "opcion",
-    pregunta: "5. ¿Qué porta San Lorenzo en la mano?",
-    opciones: ["Una Paloma", "Una cuchara", "Una parrilla"],
-    correctas: ["Una parrilla"],
-    multiple: false
-  },
-  {
-    tipo: "opcion",
-    pregunta: "6. ¿Con qué mano sujeta Neptuno la cornucopia?",
-    opciones: ["Izquierda", "Derecha"],
-    correctas: ["Derecha"],
-    multiple: false
-  },
-  {
-    tipo: "texto",
-    pregunta: "7. ¿Cuántas figuras rodean la fuente?",
-    correctaTexto: "8"
-  },
-  {
-    tipo: "puzzle",
-    pregunta: "8. Plaza de la Virgen",
-    puzzleSrc: "P8_puzzle_plaza_virgen.html"
-  },
-  {
-    tipo: "opcion",
-    pregunta: "9. ¿Qué figura esculpida puede verse en el marco del cuadro?",
-    opciones: ["Un Dragón", "Un Murciélago", "Una Corona"],
-    correctas: ["Una Corona"],
-    multiple: false
-  },
-  {
-    tipo: "opcion-multiple",
-    pregunta: "10. ¿Qué puede verse dentro?",
-    opciones: ["Un Altar", "Una bandera", "Una espada"],
-    correctas: ["Un Altar", "Una bandera"],
-    multiple: true
-  },
-  {
-    tipo: "texto",
-    pregunta: "11. Sobre ésta hay una placa conmemorativa. ¿En qué año fue expuesta dicha placa?",
-    correctaTexto: "1952"
-  },
-  {
-    tipo: "texto",
-    pregunta: "12. ¿En qué año se edificó esta finca? ¡Pista! Mire en la parte superior de la fachada.",
-    correctaTexto: "1906"
-  },
-  {
-    tipo: "opcion",
-    pregunta: "13. ¿Qué puede verse dentro?",
-    opciones: ["Una Plaza de Toros", "Unos baños romanos", "Una estación de metro"],
-    correctas: ["Unos baños romanos"],
-    multiple: false
-  },
-  {
-    tipo: "opcion",
-    pregunta: "14. ¿Sabría determinar qué geometría tiene?",
-    opciones: ["hexagonal", "Octogonal", "Cuadrangular"],
-    correctas: ["hexagonal"],
-    multiple: false
-  },
-  {
-    tipo: "texto",
-    pregunta: "15. ¿Cuántos Arcos componen la puerta?",
-    correctaTexto: "6"
-  },
-  {
-    tipo: "opcion",
-    pregunta: "16. ¿Recuerda qué animal corona el escudo municipal?",
-    opciones: ["Un Dragón", "Un Murciélago", "Un Caballo"],
-    correctas: ["Un Murciélago"],
-    multiple: false
-  },
-  {
-    tipo: "opcion",
-    pregunta: "17. ¡Preste atención a la fachada de la primera torre! ¿Qué Fruta Cítrica natural de Valencia decora la fachada?",
-    opciones: ["Limones", "Pomelos", "Naranjas"],
-    correctas: ["Naranjas"],
-    multiple: false
-  },
-  {
-    tipo: "puzzle",
-    pregunta: "18. Plaza de Toros y Estación del Norte",
-    puzzleSrc: "P18_puzzle_plaza_de_Toros_y_estacion_norte.html"
-  },
-  {
-    tipo: "texto",
-    pregunta: "19. ¿Sabría decirme qué comercio alberga dicho edificio?",
-    correctaTexto: "?"
-  },
-  {
-    tipo: "opcion-multiple",
-    pregunta: "20. Sobre la entrada principal, en un arco de medio punto, figuras alegóricas representan a los cinco continentes. ¿Qué porta la figura central?",
-    opciones: ["Una Corona", "Una Espada", "Una Antorcha"],
-    correctas: ["Una Corona", "Una Espada"],
-    multiple: true
-  },
-  {
-     tipo: "opcion",
-    pregunta: "21. ¿Qué porta la figura en la mano?",
-    opciones: ["Una balanza", "Un libro", "Una pluma"],
-    correctas: ["Una balanza"],
-    multiple: false
-  },
-  {
-    tipo: "texto",
-    pregunta: "22. ¿Cuantas plantas tiene el edificio?",
-    correctaTexto: "10"
-  },
-  {
-    tipo: "opcion",
-    pregunta: "23. Busque la vidriera con los colores de la Señera valenciana en la fachada del edificio. ¿Sabría determinar qué forma tiene?",
-    opciones: ["Cuadrangular", "Redonda", "Triangular"],
-    correctas: ["Redonda"],
-    multiple: false
-  },
-  {
-    tipo: "opcion-multiple",
-    pregunta: "24. ¿Qué sostiene la virgen en su mano?",
-    opciones: ["Un Rosario", "Un niño", "Una corona"],
-    correctas: ["Un Rosario", "Un niño"],
-    multiple: true
-  },
-  {
-    tipo: "opcion",
-    pregunta: "25. ¿Qué le entrega el ángel al niño?",
-    opciones: ["Una paloma", "Un orbe", "Alimentos"],
-    correctas: ["Un orbe"],
-    multiple: false
-  },
-  {
-    tipo: "puzzle",
-    pregunta: "26. Lonja de la Seda",
-    puzzleSrc: "P26_puzzle_lonja.html"
-  },
-  {
-    tipo: "opcion-multiple",
-    pregunta: "27. El barquero que rema a contracorriente.",
-    opciones: ["Un hombre con rostro triste manejando un pequeño bote de madera escapa a contracorriente de un monstruo."],
-    correctas: ["Un hombre con rostro triste manejando un pequeño bote de madera escapa a contracorriente de un monstruo."],
-    multiple: true
-  },
-  {
-    tipo: "opcion-multiple",
-    pregunta: "28. Un árbol muerto: símbolo del Pecado, se ve entre las dos hojas de la puerta y cumple la función de parteluz.",
-    opciones: ["Observe en la copa del árbol como 4 hombres desnudos se azotan entre si."],
-    correctas: ["Observe en la copa del árbol como 4 hombres desnudos se azotan entre si."],
-    multiple: true
-  },
-  {
-    tipo: "opcion-multiple",
-    pregunta: "29. A la derecha, un ángel que muestra su pene y...",
-    opciones: ["se dispone a introducirlo en un jarrón que sostiene con la otra mano. Algo extraño e inusual ¿no le parece?"],
-    correctas: ["se dispone a introducirlo en un jarrón que sostiene con la otra mano. Algo extraño e inusual ¿no le parece?"],
-    multiple: true
-  },
-  {
-    tipo: "opcion-multiple",
-    pregunta: "30. En el centro El barbudo y el león:",
-    opciones: ["Original y contradictoria escena en la cual el manso es precisamente el león y no el anciano barbudo."],
-    correctas: ["Original y contradictoria escena en la cual el manso es precisamente el león y no el anciano barbudo."],
-    multiple: true
-  },
-  {
-    tipo: "opcion-multiple",
-    pregunta: "31. ¡Aquí va un reto extra! ¡Busque al fornicador de la lonja!",
-    opciones: ["En una de sus ventanas, hallará a un hombre tallado, no se le advierte su cabeza, pero sí sus genitales, Y muy claramente."],
-    correctas: ["En una de sus ventanas, hallará a un hombre tallado, no se le advierte su cabeza, pero sí sus genitales, Y muy claramente."],
-    multiple: true
-  },
-  {
-   tipo: "opcion",
-    pregunta: "32. ¿Qué sostiene el niño en sus manos?",
-    opciones: ["Una paloma", "Una Concha", "Alimentos"],
-    correctas: ["Una Concha"],
-    multiple: false
+ {
+    tipo: "opcion",
+    pregunta: "1. ¿Cuántas Aventuras pueden hacerse con Valencia be Guides?",
+    opciones: ["4", "5", "6", "7"],
+    correctas: ["7"],
+    multiple: false
+  },
+  {
+    tipo: "opcion",
+    pregunta: "2. ¿Sabría decirme cómo se llaman estas Torres?",
+    opciones: ["Torres de Quart", "Torres de Serranos", "Torre del Miguelete", "Torre de Santa catalina"],
+    correctas: ["Torres de Serranos"],
+    multiple: false
+  },
+  {
+    tipo: "opcion",
+    pregunta: "3. ¿En la cumbre de las torres ondea la bandera de Valencia: sus colores se componen de rojo, amarillo y… ?",
+    opciones: ["Violeta", "Verde", "Azul"],
+    correctas: ["Azul"],
+    multiple: false
+  },
+  {
+    tipo: "texto",
+    pregunta: "4. ¿Sabría decirme el nombre de la calle?",
+    correctaTexto: "Calle Muro de Santa Ana"
+  },
+  {
+    tipo: "opcion",
+    pregunta: "5. ¿Qué porta San Lorenzo en la mano?",
+    opciones: ["Una Paloma", "Una cuchara", "Una parrilla"],
+    correctas: ["Una parrilla"],
+    multiple: false
+  },
+  {
+    tipo: "opcion",
+    pregunta: "6. ¿Con qué mano sujeta Neptuno la cornucopia?",
+    opciones: ["Izquierda", "Derecha"],
+    correctas: ["Derecha"],
+    multiple: false
+  },
+  {
+    tipo: "texto",
+    pregunta: "7. ¿Cuántas figuras rodean la fuente?",
+    correctaTexto: "8"
+  },
+  {
+    tipo: "puzzle",
+    pregunta: "8. Plaza de la Virgen",
+    puzzleSrc: "P8_puzzle_plaza_virgen.html"
+  },
+  {
+    tipo: "opcion",
+    pregunta: "9. ¿Qué figura esculpida puede verse en el marco del cuadro?",
+    opciones: ["Un Dragón", "Un Murciélago", "Una Corona"],
+    correctas: ["Una Corona"],
+    multiple: false
+  },
+  {
+    tipo: "opcion-multiple",
+    pregunta: "10. ¿Qué puede verse dentro?",
+    opciones: ["Un Altar", "Una bandera", "Una espada"],
+    correctas: ["Un Altar", "Una bandera"],
+    multiple: true
+  },
+  {
+    tipo: "texto",
+    pregunta: "11. Sobre ésta hay una placa conmemorativa. ¿En qué año fue expuesta dicha placa?",
+    correctaTexto: "1952"
+  },
+  {
+    tipo: "texto",
+    pregunta: "12. ¿En qué año se edificó esta finca? ¡Pista! Mire en la parte superior de la fachada.",
+    correctaTexto: "1906"
+  },
+  {
+    tipo: "opcion",
+    pregunta: "13. ¿Qué puede verse dentro?",
+    opciones: ["Una Plaza de Toros", "Unos baños romanos", "Una estación de metro"],
+    correctas: ["Unos baños romanos"],
+    multiple: false
+  },
+  {
+    tipo: "opcion",
+    pregunta: "14. ¿Sabría determinar qué geometría tiene?",
+    opciones: ["hexagonal", "Octogonal", "Cuadrangular"],
+    correctas: ["hexagonal"],
+    multiple: false
+  },
+  {
+    tipo: "texto",
+    pregunta: "15. ¿Cuántos Arcos componen la puerta?",
+    correctaTexto: "6"
+  },
+  {
+    tipo: "opcion",
+    pregunta: "16. ¿Recuerda qué animal corona el escudo municipal?",
+    opciones: ["Un Dragón", "Un Murciélago", "Un Caballo"],
+    correctas: ["Un Murciélago"],
+    multiple: false
+  },
+  {
+    tipo: "opcion",
+    pregunta: "17. ¡Preste atención a la fachada de la primera torre! ¿Qué Fruta Cítrica natural de Valencia decora la fachada?",
+    opciones: ["Limones", "Pomelos", "Naranjas"],
+    correctas: ["Naranjas"],
+    multiple: false
+  },
+  {
+    tipo: "puzzle",
+    pregunta: "18. Plaza de Toros y Estación del Norte",
+    puzzleSrc: "P18_puzzle_plaza_de_Toros_y_estacion_norte.html"
+  },
+  {
+    tipo: "texto",
+    pregunta: "19. ¿Sabría decirme qué comercio alberga dicho edificio?",
+    correctaTexto: "?"
+  },
+  {
+    tipo: "opcion-multiple",
+    pregunta: "20. Sobre la entrada principal, en un arco de medio punto, figuras alegóricas representan a los cinco continentes. ¿Qué porta la figura central?",
+    opciones: ["Una Corona", "Una Espada", "Una Antorcha"],
+    correctas: ["Una Corona", "Una Espada"],
+    multiple: true
+  },
+  {
+     tipo: "opcion",
+    pregunta: "21. ¿Qué porta la figura en la mano?",
+    opciones: ["Una balanza", "Un libro", "Una pluma"],
+    correctas: ["Una balanza"],
+    multiple: false
+  },
+  {
+    tipo: "texto",
+    pregunta: "22. ¿Cuantas plantas tiene el edificio?",
+    correctaTexto: "10"
+  },
+  {
+    tipo: "opcion",
+    pregunta: "23. Busque la vidriera con los colores de la Señera valenciana en la fachada del edificio. ¿Sabría determinar qué forma tiene?",
+    opciones: ["Cuadrangular", "Redonda", "Triangular"],
+    correctas: ["Redonda"],
+    multiple: false
+  },
+  {
+    tipo: "opcion-multiple",
+    pregunta: "24. ¿Qué sostiene la virgen en su mano?",
+    opciones: ["Un Rosario", "Un niño", "Una corona"],
+    correctas: ["Un Rosario", "Un niño"],
+    multiple: true
+  },
+  {
+    tipo: "opcion",
+    pregunta: "25. ¿Qué le entrega el ángel al niño?",
+    opciones: ["Una paloma", "Un orbe", "Alimentos"],
+    correctas: ["Un orbe"],
+    multiple: false
+  },
+  {
+    tipo: "puzzle",
+    pregunta: "26. Lonja de la Seda",
+    puzzleSrc: "P26_puzzle_lonja.html"
+  },
+  {
+    tipo: "opcion-multiple",
+    pregunta: "27. El barquero que rema a contracorriente.",
+    opciones: ["Un hombre con rostro triste manejando un pequeño bote de madera escapa a contracorriente de un monstruo."],
+    correctas: ["Un hombre con rostro triste manejando un pequeño bote de madera escapa a contracorriente de un monstruo."],
+    multiple: true
+  },
+  {
+    tipo: "opcion-multiple",
+    pregunta: "28. Un árbol muerto: símbolo del Pecado, se ve entre las dos hojas de la puerta y cumple la función de parteluz.",
+    opciones: ["Observe en la copa del árbol como 4 hombres desnudos se azotan entre si."],
+    correctas: ["Observe en la copa del árbol como 4 hombres desnudos se azotan entre si."],
+    multiple: true
+  },
+  {
+    tipo: "opcion-multiple",
+    pregunta: "29. A la derecha, un ángel que muestra su pene y...",
+    opciones: ["se dispone a introducirlo en un jarrón que sostiene con la otra mano. Algo extraño e inusual ¿no le parece?"],
+    correctas: ["se dispone a introducirlo en un jarrón que sostiene con la otra mano. Algo extraño e inusual ¿no le parece?"],
+    multiple: true
+  },
+  {
+    tipo: "opcion-multiple",
+    pregunta: "30. En el centro El barbudo y el león:",
+    opciones: ["Original y contradictoria escena en la cual el manso es precisamente el león y no el anciano barbudo."],
+    correctas: ["Original y contradictoria escena en la cual el manso es precisamente el león y no el anciano barbudo."],
+    multiple: true
+  },
+  {
+    tipo: "opcion-multiple",
+    pregunta: "31. ¡Aquí va un reto extra! ¡Busque al fornicador de la lonja!",
+    opciones: ["En una de sus ventanas, hallará a un hombre tallado, no se le advierte su cabeza, pero sí sus genitales, Y muy claramente."],
+    correctas: ["En una de sus ventanas, hallará a un hombre tallado, no se le advierte su cabeza, pero sí sus genitales, Y muy claramente."],
+    multiple: true
+  },
+  {
+   tipo: "opcion",
+    pregunta: "32. ¿Qué sostiene el niño en sus manos?",
+    opciones: ["Una paloma", "Una Concha", "Alimentos"],
+    correctas: ["Una Concha"],
+    multiple: false
 
-  }
+  }
 ];
 
 /* Variables para control */
@@ -400,218 +388,247 @@ const DURACION_TOTAL_MS = 3000;
 
 /* Función para limpiar el reto y mostrar uno nuevo */
 function mostrarReto() {
-  btnNext.style.display = "none"; // btnNext siempre oculto al inicio de un nuevo reto
-  btnMostrarRespuesta.style.display = "none"; // Ocultamos el botón de respuesta al cargar un nuevo reto
-  divRespuestaCorrecta.textContent = "";
-  retoDiv.classList.remove("correct", "incorrect");
-  fuegosDiv.innerHTML = ""; // Siempre limpia los fuegos al mostrar un nuevo reto
+  btnNext.style.display = "none"; // btnNext siempre oculto al inicio de un nuevo reto
+  btnMostrarRespuesta.style.display = "none"; // Ocultamos el botón de respuesta al cargar un nuevo reto
+  divRespuestaCorrecta.textContent = "";
+  retoDiv.classList.remove("correct", "incorrect");
+  fuegosDiv.innerHTML = ""; // Siempre limpia los fuegos al mostrar un nuevo reto
+  btnNext.textContent = "Siguiente"; // Restablece el texto del botón a "Siguiente" por defecto
 
-  const reto = retos[indiceReto];
-  retoDiv.innerHTML = "";
-  retoDiv.setAttribute("tabindex", "0");
+  const reto = retos[indiceReto];
+  retoDiv.innerHTML = "";
+  retoDiv.setAttribute("tabindex", "0");
 
-  let preguntaElem = document.createElement("h3");
-  preguntaElem.textContent = `${reto.pregunta}`; // La pregunta ya incluye el número de reto
-  retoDiv.appendChild(preguntaElem);
+  let preguntaElem = document.createElement("h3");
+  preguntaElem.textContent = `${reto.pregunta}`; // La pregunta ya incluye el número de reto
+  retoDiv.appendChild(preguntaElem);
 
-  if (reto.tipo === "opcion" || reto.tipo === "opcion-multiple") {
-    const inputType = reto.multiple ? "checkbox" : "radio";
-    reto.opciones.forEach((opcion, i) => {
-      const divOpcion = document.createElement("div");
-      divOpcion.className = "respuesta";
-      const input = document.createElement("input");
-      input.type = inputType;
-      input.name = "op";
-      input.value = opcion;
-      input.id = "opcion" + i;
-      divOpcion.appendChild(input);
+  if (reto.tipo === "opcion" || reto.tipo === "opcion-multiple") {
+    const inputType = reto.multiple ? "checkbox" : "radio";
+    reto.opciones.forEach((opcion, i) => {
+      const divOpcion = document.createElement("div");
+      divOpcion.className = "respuesta";
+      const input = document.createElement("input");
+      input.type = inputType;
+      input.name = "op";
+      input.value = opcion;
+      input.id = "opcion" + i;
+      divOpcion.appendChild(input);
 
-      const label = document.createElement("label");
-      label.htmlFor = input.id;
-      label.textContent = opcion;
-      divOpcion.appendChild(label);
-      retoDiv.appendChild(divOpcion);
-    });
-    retoDiv.appendChild(btnEnviar);
-  } else if (reto.tipo === "texto") {
-    const inputTexto = document.createElement("input");
-    inputTexto.type = "text";
-    inputTexto.id = "respuestaTexto";
-    inputTexto.autocomplete = "off";
-    inputTexto.spellcheck = false;
-    inputTexto.setAttribute("inputmode", "text");
-    inputTexto.style.fontSize = "1.2em";
-    inputTexto.style.width = "100%";
-    inputTexto.placeholder = "Escriba su respuesta aquí...";
-    retoDiv.appendChild(inputTexto);
-    retoDiv.appendChild(btnEnviar);
-    setTimeout(() => inputTexto.focus(), 200);
-  } else if (reto.tipo === "puzzle") {
-    // Aquí es donde incrustamos el iframe
-    const puzzleIframe = document.createElement("iframe");
-    puzzleIframe.id = "puzzleIframe";
-    // Usa la propiedad puzzleSrc definida en el objeto reto
-    puzzleIframe.src = reto.puzzleSrc; 
-    puzzleIframe.frameBorder = "0";
-    puzzleIframe.allowFullscreen = true; 
-    retoDiv.appendChild(puzzleIframe);
-    
-    btnEnviar.style.display = "none";
-    btnMostrarRespuesta.style.display = "none";
-  }
+      const label = document.createElement("label");
+      label.htmlFor = input.id;
+      label.textContent = opcion;
+      divOpcion.appendChild(label);
+      retoDiv.appendChild(divOpcion);
+    });
+    retoDiv.appendChild(btnEnviar);
+  } else if (reto.tipo === "texto") {
+    const inputTexto = document.createElement("input");
+    inputTexto.type = "text";
+    inputTexto.id = "respuestaTexto";
+    inputTexto.autocomplete = "off";
+    inputTexto.spellcheck = false;
+    inputTexto.setAttribute("inputmode", "text");
+    inputTexto.style.fontSize = "1.2em";
+    inputTexto.style.width = "100%";
+    inputTexto.placeholder = "Escriba su respuesta aquí...";
+    retoDiv.appendChild(inputTexto);
+    retoDiv.appendChild(btnEnviar);
+    setTimeout(() => inputTexto.focus(), 200);
+  } else if (reto.tipo === "puzzle") {
+    // Aquí es donde incrustamos el iframe
+    const puzzleIframe = document.createElement("iframe");
+    puzzleIframe.id = "puzzleIframe";
+    // Usa la propiedad puzzleSrc definida en el objeto reto
+    puzzleIframe.src = reto.puzzleSrc; 
+    puzzleIframe.frameBorder = "0";
+    puzzleIframe.allowFullscreen = true; 
+    retoDiv.appendChild(puzzleIframe);
+    
+    btnEnviar.style.display = "none";
+    btnMostrarRespuesta.style.display = "none";
+  }
 
-  // Si no es un puzzle, asegúrate de que el botón Enviar sea visible
-  if (reto.tipo !== "puzzle") {
-    btnEnviar.style.display = "inline-block";
-    btnEnviar.disabled = false;
-  }
+  // Si no es un puzzle, asegúrate de que el botón Enviar sea visible
+  if (reto.tipo !== "puzzle") {
+    btnEnviar.style.display = "inline-block";
+    btnEnviar.disabled = false;
+  }
 }
 
 /* Animación de fuegos artificiales valencianos (la que te encanta) */
 function fuegosArtificiales() {
-  const NUM_CHISPAS_POR_FUEGO = 30;
-  const NUM_EXPLOSIONES = 15;
+  const NUM_CHISPAS_POR_FUEGO = 30;
+  const NUM_EXPLOSIONES = 15;
 
-  fuegosDiv.innerHTML = "";
+  fuegosDiv.innerHTML = "";
 
-  for (let e = 0; e < NUM_EXPLOSIONES; e++) {
-    const delayExplosion = (DURACION_TOTAL_MS / NUM_EXPLOSIONES) * e;
+  for (let e = 0; e < NUM_EXPLOSIONES; e++) {
+    const delayExplosion = (DURACION_TOTAL_MS / NUM_EXPLOSIONES) * e;
 
-    setTimeout(() => {
-      const startX = Math.random() * 100 + 25;
-      const startY = Math.random() * 100 + 25;
+    setTimeout(() => {
+      const startX = Math.random() * 100 + 25;
+      const startY = Math.random() * 100 + 25;
 
-      for (let i = 0; i < NUM_CHISPAS_POR_FUEGO; i++) {
-        let chispa = document.createElement("div");
-        chispa.style.position = "absolute";
-        chispa.style.borderRadius = "50%";
-        chispa.style.width = "12px";
-        chispa.style.height = "12px";
-        chispa.style.background = `hsl(${Math.random() * 360}, 100%, 70%)`;
-        chispa.style.opacity = "1";
-        chispa.style.left = `${startX}px`;
-        chispa.style.top = `${startY}px`;
-        chispa.style.zIndex = "10";
+      for (let i = 0; i < NUM_CHISPAS_POR_FUEGO; i++) {
+        let chispa = document.createElement("div");
+        chispa.style.position = "absolute";
+        chispa.style.borderRadius = "50%";
+        chispa.style.width = "12px";
+        chispa.style.height = "12px";
+        chispa.style.background = `hsl(${Math.random() * 360}, 100%, 70%)`;
+        chispa.style.opacity = "1";
+        chispa.style.left = `${startX}px`;
+        chispa.style.top = `${startY}px`;
+        chispa.style.zIndex = "10";
 
-        fuegosDiv.appendChild(chispa);
+        fuegosDiv.appendChild(chispa);
 
-        const angle = Math.random() * Math.PI * 2;
-        const distance = Math.random() * 80 + 40;
-        const endX = startX + distance * Math.cos(angle);
-        const endY = startY + distance * Math.sin(angle);
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * 80 + 40;
+        const endX = startX + distance * Math.cos(angle);
+        const endY = startY + distance * Math.sin(angle);
 
-        const chispaDuration = DURACION_TOTAL_MS / NUM_EXPLOSIONES * 1.5;
+        const chispaDuration = DURACION_TOTAL_MS / NUM_EXPLOSIONES * 1.5;
 
-        chispa.style.transition = `all ${chispaDuration}ms ease-out`;
-        setTimeout(() => {
-          chispa.style.left = `${endX}px`;
-          chispa.style.top = `${endY}px`;
-          chispa.style.opacity = "0";
-          chispa.style.transform = "scale(0.5)";
-        }, 10);
+        chispa.style.transition = `all ${chispaDuration}ms ease-out`;
+        setTimeout(() => {
+          chispa.style.left = `${endX}px`;
+          chispa.style.top = `${endY}px`;
+          chispa.style.opacity = "0";
+          chispa.style.transform = "scale(0.5)";
+        }, 10);
 
-        setTimeout(() => {
-          if (chispa.parentNode) {
-            chispa.parentNode.removeChild(chispa);
-          }
-        }, delayExplosion + chispaDuration + 50);
-      }
-    }, delayExplosion);
-  }
+        setTimeout(() => {
+          if (chispa.parentNode) {
+            chispa.parentNode.removeChild(chispa);
+          }
+        }, delayExplosion + chispaDuration + 50);
+      }
+    }, delayExplosion);
+  }
 }
 
 /* Función para vibrar solo al fallar */
 function vibrarFallido() {
-  if (navigator.vibrate) navigator.vibrate(300);
+  if (navigator.vibrate) navigator.vibrate(300);
 }
 
 /* Función para verificar la respuesta */
 function verificar() {
-  const reto = retos[indiceReto];
-  btnEnviar.disabled = true;
-  divRespuestaCorrecta.textContent = "";
-  retoDiv.classList.remove("correct", "incorrect");
-  fuegosDiv.innerHTML = "";
+  const reto = retos[indiceReto];
+  btnEnviar.disabled = true;
+  divRespuestaCorrecta.textContent = "";
+  retoDiv.classList.remove("correct", "incorrect");
+  fuegosDiv.innerHTML = "";
 
-  btnNext.style.display = "none";
+  btnNext.style.display = "none";
+  btnNext.textContent = "Siguiente"; // Restablece el texto del botón al verificar un reto no-puzzle
 
-  if (reto.tipo === "opcion") {
-    const seleccion = document.querySelector('input[name="op"]:checked');
-    if (!seleccion) {
-      alert("Por favor, seleccione una opción.");
-      btnEnviar.disabled = false;
-      return;
-    }
-    const valor = seleccion.value;
-    if (reto.correctas.includes(valor)) {
-      retoDiv.classList.add("correct");
-      fuegosArtificiales();
-      btnMostrarRespuesta.style.display = "inline-block";
-      setTimeout(() => {
-        btnNext.style.display = "inline-block";
-      }, DURACION_TOTAL_MS);
-    } else {
-      retoDiv.classList.add("incorrect");
-      vibrarFallido();
-      btnEnviar.disabled = false;
-    }
-  } else if (reto.tipo === "opcion-multiple") {
-    const checks = Array.from(document.querySelectorAll('input[name="op"]:checked')).map(i => i.value);
-    if (checks.length === 0) {
-      alert("Por favor, seleccione al menos una opción.");
-      btnEnviar.disabled = false;
-      return;
-    }
-    let esCorrecto = true;
-    reto.correctas.forEach(c => {
-      if (!checks.includes(c)) esCorrecto = false;
-    });
-    checks.forEach(s => {
-      if (!reto.correctas.includes(s)) esCorrecto = false;
-    });
+  if (reto.tipo === "opcion") {
+    const seleccion = document.querySelector('input[name="op"]:checked');
+    if (!seleccion) {
+      alert("Por favor, seleccione una opción.");
+      btnEnviar.disabled = false;
+      return;
+    }
+    const valor = seleccion.value;
+    if (reto.correctas.includes(valor)) {
+      retoDiv.classList.add("correct");
+      fuegosArtificiales();
+      btnMostrarRespuesta.style.display = "inline-block";
+      setTimeout(() => {
+        btnNext.style.display = "inline-block";
+      }, DURACION_TOTAL_MS);
+    } else {
+      retoDiv.classList.add("incorrect");
+      vibrarFallido();
+      btnEnviar.disabled = false;
+    }
+  } else if (reto.tipo === "opcion-multiple") {
+    const checks = Array.from(document.querySelectorAll('input[name="op"]:checked')).map(i => i.value);
+    if (checks.length === 0) {
+      alert("Por favor, seleccione al menos una opción.");
+      btnEnviar.disabled = false;
+      return;
+    }
+    let esCorrecto = true;
+    reto.correctas.forEach(c => {
+      if (!checks.includes(c)) esCorrecto = false;
+    });
+    checks.forEach(s => {
+      if (!reto.correctas.includes(s)) esCorrecto = false;
+    });
 
-    if (esCorrecto) {
-      retoDiv.classList.add("correct");
-      fuegosArtificiales();
-      btnMostrarRespuesta.style.display = "inline-block";
-      setTimeout(() => {
-        btnNext.style.display = "inline-block";
-      }, DURACION_TOTAL_MS);
-    } else {
-      retoDiv.classList.add("incorrect");
-      vibrarFallido();
-      btnEnviar.disabled = false;
-    }
-  } else if (reto.tipo === "texto") {
-    retoDiv.classList.add("correct");
-    fuegosArtificiales();
-    btnMostrarRespuesta.style.display = "inline-block";
-    setTimeout(() => {
-      btnNext.style.display = "inline-block";
-    }, DURACION_TOTAL_MS);
-  }
+    if (esCorrecto) {
+      retoDiv.classList.add("correct");
+      fuegosArtificiales();
+      btnMostrarRespuesta.style.display = "inline-block";
+      setTimeout(() => {
+        btnNext.style.display = "inline-block";
+      }, DURACION_TOTAL_MS);
+    } else {
+      retoDiv.classList.add("incorrect");
+      vibrarFallido();
+      btnEnviar.disabled = false;
+    }
+  } else if (reto.tipo === "texto") {
+    // Para los retos de tipo "texto", tu lógica actual siempre los marca como correctos
+    // Considera añadir una validación aquí si la respuesta de texto debe ser específica.
+    // Por ahora, mantengo tu comportamiento actual que siempre lanza fuegos y avanza.
+    retoDiv.classList.add("correct");
+    fuegosArtificiales();
+    btnMostrarRespuesta.style.display = "inline-block";
+    setTimeout(() => {
+      btnNext.style.display = "inline-block";
+    }, DURACION_TOTAL_MS);
+  }
 }
 
 /* Mostrar respuesta correcta */
 btnMostrarRespuesta.addEventListener("click", () => {
-  const reto = retos[indiceReto];
-  if (reto.tipo === "opcion" || reto.tipo === "opcion-multiple") {
-    divRespuestaCorrecta.textContent = "Respuesta correcta: " + reto.correctas.join(", ");
-  } else if (reto.tipo === "texto") {
-    divRespuestaCorrecta.textContent = "Respuesta correcta: " + reto.correctaTexto;
-  } else {
-    divRespuestaCorrecta.textContent = "No hay respuesta correcta disponible.";
-  }
+  const reto = retos[indiceReto];
+  if (reto.tipo === "opcion" || reto.tipo === "opcion-multiple") {
+    divRespuestaCorrecta.textContent = "Respuesta correcta: " + reto.correctas.join(", ");
+  } else if (reto.tipo === "texto") {
+    divRespuestaCorrecta.textContent = "Respuesta correcta: " + reto.correctaTexto;
+  } else {
+    divRespuestaCorrecta.textContent = "No hay respuesta correcta disponible.";
+  }
 });
 
 /* Botón siguiente */
 btnNext.addEventListener("click", () => {
-  indiceReto++;
-  if (indiceReto >= retos.length) {
-    alert("¡Has terminado todos los retos!");
-    indiceReto = 0; 
-  }
-  mostrarReto();
+  // Si el texto del botón es "Reintentar Puzzle", recargamos el mismo puzzle
+  if (btnNext.textContent === "Reintentar Puzzle") {
+    const currentPuzzleSrc = retos[indiceReto].puzzleSrc;
+    const puzzleIframe = document.getElementById('puzzleIframe');
+    if (puzzleIframe && currentPuzzleSrc) {
+      puzzleIframe.src = currentPuzzleSrc; // Recarga el iframe
+      console.log('Recargando el puzzle para reintentar...');
+      // Limpiamos el estado visual para que el usuario pueda intentarlo de nuevo
+      retoDiv.classList.remove("incorrect");
+      divRespuestaCorrecta.textContent = "";
+      btnNext.style.display = "none"; // Oculta el botón mientras juega de nuevo
+      btnNext.textContent = "Siguiente"; // Restablece el texto para el siguiente avance
+    } else {
+      // Si no se encuentra el iframe o la URL, simplemente avanzamos
+      indiceReto++;
+      if (indiceReto >= retos.length) {
+        alert("¡Has terminado todos los retos!");
+        indiceReto = 0; 
+      }
+      mostrarReto();
+    }
+  } else {
+    // Comportamiento normal: avanzar al siguiente reto
+    indiceReto++;
+    if (indiceReto >= retos.length) {
+      alert("¡Has terminado todos los retos!");
+      indiceReto = 0; 
+    }
+    mostrarReto();
+  }
 });
 
 /* Botón enviar */
@@ -619,24 +636,33 @@ btnEnviar.addEventListener("click", verificar);
 
 /* Listener para mensajes del iframe del puzzle */
 window.addEventListener("message", (event) => {
-  // Asegúrate de que el mensaje viene de tu origen esperado para seguridad
-  // if (event.origin !== "http://tu-dominio.com") return; 
+  // Puedes añadir una verificación de origen si tus puzzles se alojan en un dominio diferente
+  // if (event.origin !== "https://valenciavguides.github.io") return; // Ejemplo
 
-  if (event.data === "puzzle-completed") {
-    retoDiv.classList.add("correct"); 
-    fuegosArtificiales(); 
-    divRespuestaCorrecta.textContent = "¡Puzzle Resuelto con Éxito!";
-    btnMostrarRespuesta.style.display = "none"; 
-    setTimeout(() => {
-      btnNext.style.display = "inline-block"; 
-    }, DURACION_TOTAL_MS); 
-  } else if (event.data === "puzzle-timeout") {
-    retoDiv.classList.add("incorrect"); 
-    vibrarFallido(); 
-    divRespuestaCorrecta.textContent = "⏰ Tiempo agotado. Gracias por participar.";
-    btnMostrarRespuesta.style.display = "none"; 
-    btnNext.style.display = "inline-block"; 
-  }
+  if (event.data === "puzzle-completed") {
+    console.log('Mensaje recibido: Puzzle completado. ¡Avanzando al siguiente reto!');
+    retoDiv.classList.add("correct"); // Añade el borde verde al contenedor principal
+    fuegosArtificiales(); // Muestra la animación de fuegos
+    divRespuestaCorrecta.textContent = "🎉 ¡Puzzle Resuelto con Éxito!"; // Mensaje de éxito
+    btnMostrarRespuesta.style.display = "none"; // Oculta el botón de "Respuesta Correcta" para puzzles
+
+    // Después de la animación, muestra el botón Siguiente y avanza automáticamente
+    setTimeout(() => {
+      btnNext.style.display = "inline-block";
+      btnNext.textContent = "Siguiente"; // Asegúrate de que el texto sea "Siguiente" para el avance normal
+      btnNext.click(); // Simula un click en el botón Siguiente para avanzar automáticamente
+    }, DURACION_TOTAL_MS); // Espera a que la animación de fuegos termine
+  } else if (event.data === "puzzle-timeout") {
+    console.log('Mensaje recibido: Tiempo del puzzle agotado. Ofreciendo reintentar o avanzar.');
+    retoDiv.classList.add("incorrect"); // Añade el borde rojo al contenedor principal
+    vibrarFallido(); // Activa la vibración
+    divRespuestaCorrecta.textContent = "⏰ Tiempo agotado. Puedes reintentar o ir al siguiente reto."; // Mensaje de tiempo agotado
+    btnMostrarRespuesta.style.display = "none"; // Oculta el botón de "Respuesta Correcta"
+    
+    // Muestra el botón y cambia su texto para ofrecer reintento
+    btnNext.style.display = "inline-block"; 
+    btnNext.textContent = "Reintentar Puzzle"; // Cambia el texto del botón
+  }
 });
 
 
