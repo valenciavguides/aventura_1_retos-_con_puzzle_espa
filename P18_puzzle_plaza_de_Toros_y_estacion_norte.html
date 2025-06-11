@@ -3,17 +3,14 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-<title>18.Plaza de Toros y Estación del Norte</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+<title>18 Plaza de Toros y Estación del Norte</title>
 <style>
   html, body {
     margin: 0; padding: 0; height: 100%;
-    background: #2c3e50;
-    font-family: 'Press Start 2P', cursive;
-    color: #ecf0f1;
+    background: #f0f0f0;
+    font-family: sans-serif;
     display: flex; flex-direction: column;
     align-items: center; justify-content: flex-start;
-    overflow: hidden;
   }
   h1 {
     font-size: 1.2em;
@@ -37,20 +34,15 @@
     flex-shrink: 1;
     min-width: 0;
   }
-  #restartBtn, #pauseBtn, #continueBtn {
-    background-color: #e67e22;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
+  #restartBtn, #pauseBtn {
+    padding: 6px 14px;
+    background: white;
+    color: black;
+    border: 2px solid black;
+    border-radius: 8px;
+    font-size: 0.9em;
     cursor: pointer;
-    font-family: 'Press Start 2P', cursive;
-    font-size: 0.7em;
-    transition: background-color 0.3s ease;
     white-space: nowrap;
-  }
-  #restartBtn:hover, #pauseBtn:hover, #continueBtn:hover {
-    background-color: #d35400;
   }
   #timer {
     font-size: 1em;
@@ -58,22 +50,26 @@
     min-width: 60px;
     text-align: center;
     white-space: nowrap;
-    background-color: #2c3e50;
-    padding: 5px 10px;
-    border-radius: 5px;
   }
   #continueBtn {
-    display: none;
+    padding: 6px 14px;
+    background: white;
+    color: black;
+    border: 2px solid black;
+    border-radius: 8px;
+    font-size: 0.9em;
+    cursor: pointer;
+    white-space: nowrap;
     flex-shrink: 0;
+    display: none; /* Este botón ahora lo controlará el iframe principal */
   }
   #puzzleWrapper {
     width: 95vw;
     max-width: 1000px;
-    aspect-ratio: 4 / 3;
-    background: #222;
+    aspect-ratio: 3 / 2;
+    background: #ddd;
     position: relative;
     border: 5px solid #333;
-    box-sizing: border-box;
     overflow: hidden;
     touch-action: none;
   }
@@ -86,58 +82,41 @@
     position: absolute;
     top: 40%; left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(255,255,255,0.95);
     padding: 20px;
-    border: 2px solid gold;
+    border: 2px solid #333;
     border-radius: 12px;
     text-align: center;
     z-index: 10;
     font-size: 1.2em;
-    color: gold;
-    text-shadow: 0 0 5px rgba(255,255,255,0.7);
-  }
-  @media (max-width: 600px) {
-    body {
-      font-size: 0.9em;
-    }
-    h1 {
-      font-size: 1em;
-    }
-    #restartBtn, #pauseBtn, #continueBtn {
-      font-size: 0.6em;
-      padding: 8px 10px;
-    }
-    #timer {
-      font-size: 0.8em;
-    }
-    #completeMsg {
-      font-size: 1em;
-      padding: 15px;
-    }
   }
   @media (orientation: landscape) {
     h1 {
-      display: block;
+      display: none;
     }
     #puzzleWrapper {
-      aspect-ratio: 4 / 3;
+      aspect-ratio: 16 / 9;
     }
     #topBar {
-      width: 95vw;
-      padding: 0;
+      width: 100vw;
+      padding: 0 10px;
+    }
+  }
+  @media (max-width: 768px) and (orientation: portrait) {
+    #puzzleWrapper {
+      height: 600px;
     }
   }
 </style>
 </head>
 <body>
-<h1>Puzzle: Plaza de Toros y Estación del Norte</h1>
+
 <div id="topBar">
   <div id="leftControls">
     <button id="restartBtn">🔄 Reiniciar</button>
-    <button id="pauseBtn">⏸️ Pausar</button>
-    <span id="timer">Tiempo: 03:00</span>
+    <button id="pauseBtn">⏸️ Pausa</button>
+    <span id="timer">03:00</span>
   </div>
-  <button id="continueBtn">Continuar</button>
 </div>
 <div id="puzzleWrapper">
   <canvas id="puzzleCanvas"></canvas>
@@ -145,11 +124,11 @@
     <strong id="messageText"></strong><br />
   </div>
 </div>
-
 <script>
-const puzzleCanvas = document.getElementById("puzzleCanvas");
-const ctx = puzzleCanvas.getContext("2d");
-const imageSrc = "imagenes_puzzles/P18_puzzle_plaza_de_Toros_y_estacion_norte.jpg"; // ¡Ruta de imagen actualizada!
+const canvas = document.getElementById("puzzleCanvas");
+const ctx = canvas.getContext("2d");
+// URL de la imagen para el puzzle de la Plaza de la Virgen
+const imageSrc = "imagenes_puzzles/P18_plaza_de_toros_y_estacion_del_norte.jpg"; 
 const rows = 3, cols = 4;
 let pieces = [], draggingPiece = null;
 let offsetX = 0, offsetY = 0, placedCount = 0;
@@ -157,19 +136,15 @@ let img = new Image();
 let animatingPiece = null, animFrame = 0, animDirection = 1, animScale = 1;
 const completeMsg = document.getElementById("completeMsg");
 const messageText = document.getElementById("messageText");
-const continueBtn = document.getElementById("continueBtn");
 const restartBtn = document.getElementById("restartBtn");
 const pauseBtn = document.getElementById("pauseBtn");
 const timerDisplay = document.getElementById("timer");
 const puzzleWrapper = document.getElementById("puzzleWrapper");
-
 const placeSound = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg");
 const failSound = new Audio("https://actions.google.com/sounds/v1/cartoon/concussive_hit_guitar_boing.ogg");
 const successSound = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
 placeSound.volume = 0.3; failSound.volume = 0.4; successSound.volume = 0.5;
-
 let paused = false, timeLeft = 180, timerInterval;
-
 let puzzleEnded = false;
 
 const effectCanvas = document.createElement("canvas");
@@ -183,10 +158,6 @@ effectCanvas.style.height = "100%";
 puzzleWrapper.appendChild(effectCanvas);
 
 img.onload = () => { init(); };
-img.onerror = () => {
-  console.error("Error al cargar la imagen:", imageSrc);
-  alert("No se pudo cargar la imagen del puzzle. Revisa la ruta.");
-};
 img.src = imageSrc;
 
 window.addEventListener("resize", resizePieces);
@@ -195,8 +166,8 @@ window.addEventListener("orientationchange", () => setTimeout(resizePieces, 300)
 function resizePieces() {
   const w = puzzleWrapper.clientWidth;
   const h = puzzleWrapper.clientHeight;
-  puzzleCanvas.width = w;
-  puzzleCanvas.height = h;
+  canvas.width = w;
+  canvas.height = h;
   effectCanvas.width = w;
   effectCanvas.height = h;
   const pw = w / cols;
@@ -209,13 +180,12 @@ function resizePieces() {
     p.h = ph;
     p.correctX = colIndex * pw;
     p.correctY = rowIndex * ph;
-
     if (p.placed) {
       p.x = p.correctX;
       p.y = p.correctY;
     } else {
-      p.x = Math.min(Math.max(p.x * (w / puzzleCanvas.width), 0), w - pw);
-      p.y = Math.min(Math.max(p.y * (h / puzzleCanvas.height), 0), h - ph);
+      p.x = Math.min(p.x * (w / canvas.width), w - pw);
+      p.y = Math.min(p.y * (h / canvas.height), h - ph);
     }
   });
   draw();
@@ -223,25 +193,20 @@ function resizePieces() {
 
 function init() {
   puzzleEnded = false;
-  paused = false;
-  pauseBtn.textContent = '⏸️ Pausar';
-  completeMsg.style.display = "none";
-  continueBtn.style.display = "none";
-  puzzleWrapper.style.borderColor = "#333";
-  effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
-
   const w = puzzleWrapper.clientWidth, h = puzzleWrapper.clientHeight;
-  puzzleCanvas.width = w; puzzleCanvas.height = h;
+  canvas.width = w; canvas.height = h;
   effectCanvas.width = w; effectCanvas.height = h;
   const pw = w / cols, ph = h / rows;
 
   pieces = []; placedCount = 0;
-  
+  completeMsg.style.display = "none";
+  puzzleWrapper.style.borderColor = "#333";
+
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       pieces.push({
-        sx: c * img.naturalWidth / cols, sy: r * img.naturalHeight / rows,
-        sw: img.naturalWidth / cols, sh: img.naturalHeight / rows,
+        sx: c * img.width / cols, sy: r * img.height / rows,
+        sw: img.width / cols, sh: img.height / rows,
         x: Math.random() * (w - pw), y: Math.random() * (h - ph),
         w: pw, h: ph, correctX: c * pw, correctY: r * ph,
         placed: false, scale: 1
@@ -249,43 +214,28 @@ function init() {
     }
   }
 
-  timeLeft = 180;
-  updateTimerDisplay();
-  startTimer();
+  timeLeft = 180; // Reiniciar tiempo
+  updateTimerDisplay(); // Actualizar visualmente
+  startTimer(); // Iniciar cuenta
   draw();
 }
 
 function draw() {
-  ctx.clearRect(0, 0, puzzleCanvas.width, puzzleCanvas.height);
-  
-  for (const p of pieces.filter(p => p.placed)) {
-    drawPiece(p);
-    ctx.strokeStyle = '#555';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(p.x, p.y, p.w, p.h);
-  }
-  for (const p of pieces.filter(p => !p.placed)) {
-    drawPiece(p);
-    ctx.strokeStyle = '#555';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(p.x, p.y, p.w, p.h);
-  }
-
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (const p of pieces.filter(p => p.placed)) drawPiece(p);
+  for (const p of pieces.filter(p => !p.placed)) drawPiece(p);
   if (animatingPiece) {
-    animatingPiece.scale = animScale;
+    animatingPiece.scale = animScale; 
     animFrame++;
     animScale += 0.05 * animDirection;
     if (animFrame >= 10) animDirection = -1;
     if (animFrame >= 20) {
       animatingPiece.scale = 1;
       animatingPiece = null;
-      animFrame = 0; animDirection = 1; animScale = 1;
+      animFrame = 0; animDirection = 1;
     }
   }
-  
-  if (!puzzleEnded) {
-    requestAnimationFrame(draw);
-  }
+  requestAnimationFrame(draw);
 }
 
 function drawPiece(piece) {
@@ -299,7 +249,7 @@ function drawPiece(piece) {
 
 function onPointerDown(e) {
   if (puzzleEnded || paused) return;
-  const rect = puzzleCanvas.getBoundingClientRect();
+  const rect = canvas.getBoundingClientRect();
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
   for (let i = pieces.length - 1; i >= 0; i--) {
@@ -308,8 +258,6 @@ function onPointerDown(e) {
       draggingPiece = p;
       offsetX = x - p.x;
       offsetY = y - p.y;
-      pieces.splice(i, 1);
-      pieces.push(draggingPiece);
       break;
     }
   }
@@ -317,56 +265,30 @@ function onPointerDown(e) {
 
 function onPointerMove(e) {
   if (!draggingPiece || puzzleEnded || paused) return;
-  const rect = puzzleCanvas.getBoundingClientRect();
+  const rect = canvas.getBoundingClientRect();
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
-  draggingPiece.x = Math.min(Math.max(x - offsetX, 0), puzzleCanvas.width - draggingPiece.w);
-  draggingPiece.y = Math.min(Math.max(y - offsetY, 0), puzzleCanvas.height - draggingPiece.h);
-  
-  effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
-  const targetPiece = getPieceAt(x, y);
-  if (targetPiece && targetPiece !== draggingPiece) {
-    effectCtx.strokeStyle = 'rgba(0, 255, 0, 0.7)';
-    effectCtx.lineWidth = 3;
-    effectCtx.strokeRect(targetPiece.x, targetPiece.y, targetPiece.w, targetPiece.h);
-  }
+  draggingPiece.x = Math.min(Math.max(x - offsetX, 0), canvas.width - draggingPiece.w);
+  draggingPiece.y = Math.min(Math.max(y - offsetY, 0), canvas.height - draggingPiece.h);
 }
 
 function onPointerUp(e) {
   if (!draggingPiece || puzzleEnded || paused) return;
-  effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
-
   if (Math.abs(draggingPiece.x - draggingPiece.correctX) < draggingPiece.w / 4 &&
       Math.abs(draggingPiece.y - draggingPiece.correctY) < draggingPiece.h / 4) {
     draggingPiece.x = draggingPiece.correctX;
     draggingPiece.y = draggingPiece.correctY;
-    if (!draggingPiece.placed) {
-      draggingPiece.placed = true;
-      placedCount++;
-      placeSound.play();
-      animatingPiece = draggingPiece;
-      animFrame = 0;
-      animDirection = 1;
-      animScale = 1;
-    }
-  } else {
-    failSound.play();
-  }
+    draggingPiece.placed = true;
+    placedCount++;
+    placeSound.play();
+    animatingPiece = draggingPiece;
+    animFrame = 0; animDirection = 1; animScale = 1; 
+  } 
+  // Eliminado: else { failSound.play(); } -> para quitar el sonido al colocar mal una pieza.
   draggingPiece = null;
-  
   if (placedCount === pieces.length) {
     endPuzzle(true);
   }
-}
-
-function getPieceAt(x, y) {
-  for (let i = pieces.length - 1; i >= 0; i--) {
-    const p = pieces[i];
-    if (!p.placed && x >= p.x && x <= p.x + p.w && y >= p.y && y <= p.y + p.h) {
-      return p;
-    }
-  }
-  return null;
 }
 
 function startTimer() {
@@ -385,27 +307,31 @@ function startTimer() {
 function updateTimerDisplay() {
   const m = Math.floor(timeLeft / 60);
   const s = timeLeft % 60;
-  timerDisplay.textContent = `Tiempo: ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+  timerDisplay.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
 }
 
 function endPuzzle(success) {
   puzzleEnded = true;
   clearInterval(timerInterval);
-  continueBtn.style.display = "inline-block";
   completeMsg.style.display = "block";
 
   if (success) {
     successSound.play();
-    messageText.textContent = "🎉 ¡Bravo! ¡Puzzle Completado!";
-    puzzleWrapper.style.borderColor = "gold";
-    runFireworks();
+    messageText.textContent = "🎉 ¡Puzzle completado!";
+    puzzleWrapper.style.borderColor = "green";
+    runFireworks(); 
+    // Envía mensaje a la página padre indicando que el puzzle se completó con éxito
+    window.parent.postMessage("puzzle-state-completed", "*"); 
   } else {
-    messageText.textContent = "⏰ ¡Tiempo agotado! Inténtalo de nuevo.";
+    failSound.play();
+    messageText.textContent = "⏰ Tiempo agotado. Gracias por participar."; 
     puzzleWrapper.style.borderColor = "red";
-    runConfetti();
+    runConfetti(); 
+    // Envía mensaje a la página padre indicando que el tiempo del puzzle se agotó
+    window.parent.postMessage("puzzle-state-timeout", "*"); 
   }
-
-  window.parent.postMessage(success ? 'puzzle-completed' : 'puzzle-timeout', '*');
+  // Siempre se envía el mensaje para avanzar al siguiente reto, independientemente del resultado del puzzle
+  window.parent.postMessage('advance-to-next', '*');
 }
 
 function runFireworks() {
@@ -517,27 +443,24 @@ function runConfetti() {
   requestAnimationFrame(loop);
 }
 
-
 restartBtn.addEventListener("click", () => {
+  paused = false;
+  puzzleEnded = false;
+  completeMsg.style.display = "none";
+  puzzleWrapper.style.borderColor = "#333";
   init();
 });
 pauseBtn.addEventListener("click", () => {
   paused = !paused;
-  pauseBtn.textContent = paused ? "▶️ Reanudar" : "⏸️ Pausar";
+  pauseBtn.textContent = paused ? "▶️ Continuar" : "⏸️ Pausa";
 });
 
-continueBtn.addEventListener("click", () => {
-  completeMsg.style.display = "none";
-  continueBtn.style.display = "none";
-});
-
-
-puzzleCanvas.addEventListener("pointerdown", onPointerDown);
-puzzleCanvas.addEventListener("pointermove", onPointerMove);
-puzzleCanvas.addEventListener("pointerup", onPointerUp);
-puzzleCanvas.addEventListener("pointercancel", onPointerUp);
-puzzleCanvas.addEventListener("pointerout", onPointerUp);
-puzzleCanvas.addEventListener("pointerleave", onPointerUp);
+canvas.addEventListener("pointerdown", onPointerDown);
+canvas.addEventListener("pointermove", onPointerMove);
+canvas.addEventListener("pointerup", onPointerUp);
+canvas.addEventListener("pointercancel", onPointerUp);
+canvas.addEventListener("pointerout", onPointerUp);
+canvas.addEventListener("pointerleave", onPointerUp);
 
 </script>
 </body>
