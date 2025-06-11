@@ -477,7 +477,7 @@ function mostrarReto() {
         // El avance lo gestiona el puzzle directamente al hacer clic en su botón "Continuar"
         btnEnviar.style.display = "none";
         btnMostrarRespuesta.style.display = "none";
-        btnNext.style.display = "none";
+        btnNext.style.display = "none"; // Asegurarse de que el botón "Siguiente" de la página principal esté oculto inicialmente para puzzles
     }
 }
 
@@ -636,32 +636,32 @@ window.addEventListener("message", (event) => {
 
     // Mensaje del puzzle para que la página principal reaccione con el borde de éxito
     if (event.data === "puzzle-state-completed") {
-        console.log('Mensaje recibido: Puzzle completado. Poniendo borde verde.');
+        console.log('Mensaje recibido: Puzzle completado. Poniendo borde verde y mostrando mensaje.');
         retoDiv.classList.add("correct"); // Borde verde
         retoDiv.classList.remove("incorrect"); // Asegurarse de quitar el borde rojo si estaba
         divRespuestaCorrecta.textContent = "🎉 ¡Puzzle Resuelto con Éxito!"; // Mensaje
         divRespuestaCorrecta.style.display = "block"; // Mostrar mensaje
+        // NO AVANZAR AUTOMÁTICAMENTE, en su lugar, mostrar el botón "Siguiente" principal
+        btnNext.style.display = "inline-block";
     }
     // Mensaje del puzzle para que la página principal reaccione con el borde de fallo por tiempo
     else if (event.data === "puzzle-state-timeout") {
-        console.log('Mensaje recibido: Tiempo del puzzle agotado. Poniendo borde rojo y vibrando.');
+        console.log('Mensaje recibido: Tiempo del puzzle agotado. Poniendo borde rojo, vibrando y mostrando mensaje.');
         retoDiv.classList.add("incorrect"); // Borde rojo
         retoDiv.classList.remove("correct"); // Asegurarse de quitar el borde verde si estaba
         vibrar(); // Vibración al agotar el tiempo
         divRespuestaCorrecta.textContent = "⏰ Tiempo agotado. Gracias por participar."; // Mensaje
         divRespuestaCorrecta.style.display = "block"; // Mostrar mensaje
+        // NO AVANZAR AUTOMÁTICAMENTE, en su lugar, mostrar el botón "Siguiente" principal
+        btnNext.style.display = "inline-block";
     }
-    // Esta es la señal FINAL del puzzle para AVANZAR al siguiente reto
-    // Se activa cuando el usuario hace clic en el botón "Continuar" dentro del puzzle.
+    // Esta es la señal para que la página principal active el botón "Siguiente",
+    // NO PARA AVANZAR directamente. Se activa cuando el usuario hace clic en el
+    // botón "Continuar" dentro del puzzle (si lo implementas allí).
     else if (event.data === "advance-to-next") {
-        console.log('Mensaje recibido: Avance al siguiente reto solicitado por el puzzle.');
-        divRespuestaCorrecta.style.display = "none"; // Ocultar mensaje al avanzar
-        indiceReto++; // Avanza al siguiente reto
-        if (indiceReto >= retos.length) {
-            alert("¡Has terminado todos los retos de la Aventura 1!");
-            indiceReto = 0; // Opcional: Reiniciar o redirigir al final de la aventura
-        }
-        mostrarReto(); // Carga y muestra el siguiente reto
+        console.log('Mensaje recibido: Solicitud de avance recibida desde el puzzle.');
+        divRespuestaCorrecta.style.display = "none"; // Ocultar cualquier mensaje previo
+        btnNext.style.display = "inline-block"; // Mostrar el botón "Siguiente" principal
     }
 });
 
