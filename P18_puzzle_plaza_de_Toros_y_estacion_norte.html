@@ -162,18 +162,24 @@ canvas {
   const ctx = puzzleCanvas.getContext('2d');
   const effectCanvas = document.getElementById('effectCanvas');
   const effectCtx = effectCanvas.getContext('2d');
+  
   const image = new Image();
-  const imageSrc = 'imagenes_puzzles/P18_plaza_de_toros_y_estacion_del_norte.jpg';
+  // RUTA DE IMAGEN ESPECÍFICA PARA P18
+  const imageSrc = "imagenes_puzzles/P18_plaza_de_toros_y_estacion_del_norte.jpg"; 
+  
+  // *** INICIO DE LAS LÍNEAS CLAVE CORREGIDAS ***
+  image.onload = () => {
+    // Cuando la imagen cargue, llama a la función init
+    init(); 
+  };
+  image.src = imageSrc; // ¡Esta línea INICIA LA CARGA DE LA IMAGEN!
+  // *** FIN DE LAS LÍNEAS CLAVE CORREGIDAS ***
+
   const restartBtn = document.getElementById('restartBtn');
   const pauseBtn = document.getElementById('pauseBtn');
   const completeMsg = document.getElementById('completeMessage');
   const puzzleWrapper = document.getElementById('puzzleWrapper');
   const timerDisplay = document.getElementById('timerDisplay');
-
-  // Ajustado: URL correcta de la imagen desde imgbb
-  const imageSrc = "P18_plaza_de_toros_y_estacion_del_norte.jpg";
-  const image = new Image();
-  image.crossOrigin = "Anonymous"; // Necesario para imágenes de diferentes dominios
   let puzzlePieces = [];
   let cols = 4; // Número de columnas
   let rows = 3; // Número de filas
@@ -182,7 +188,7 @@ canvas {
   let offsetX, offsetY;
   let startTime, timerInterval;
   let paused = false;
-  let puzzleEnded = false; // Nueva variable para controlar el estado del puzzle
+  let puzzleEnded = false; 
 
   function resizeCanvas() {
     const wrapperRect = puzzleWrapper.getBoundingClientRect();
@@ -192,7 +198,7 @@ canvas {
     effectCanvas.height = wrapperRect.height;
 
     if (image.complete && image.naturalWidth > 0) {
-      drawPuzzle(); // Redibujar si la imagen ya está cargada
+      drawPuzzle(); 
     }
   }
 
@@ -205,23 +211,13 @@ canvas {
     timerDisplay.textContent = 'Tiempo: 00:00';
     clearInterval(timerInterval);
 
-    image.onload = () => {
-      // Calcular el tamaño de las piezas en función del lienzo (canvas)
-      pieceWidth = puzzleCanvas.width / cols;
-      pieceHeight = puzzleCanvas.height / rows;
-      createPieces();
-      shufflePieces();
-      drawPuzzle();
-      startTime = Date.now();
-      timerInterval = setInterval(updateTimer, 1000);
-    };
-
-    image.onerror = () => {
-      console.error("Error al cargar la imagen del puzzle:", imageSrc);
-      alert("No se pudo cargar la imagen del puzzle. Por favor, revise la URL.");
-    };
-
-    image.src = imageSrc; // Carga la imagen
+    pieceWidth = puzzleCanvas.width / cols;
+    pieceHeight = puzzleCanvas.height / rows;
+    createPieces();
+    shufflePieces();
+    drawPuzzle();
+    startTime = Date.now();
+    timerInterval = setInterval(updateTimer, 1000);
   }
 
   function createPieces() {
@@ -235,8 +231,10 @@ canvas {
           originalY: r * pieceHeight,
           width: pieceWidth,
           height: pieceHeight,
-          // Propiedades para arrastrar
-          isDragging: false
+          row: r,
+          col: c,
+          originalRow: r,
+          originalCol: c,
         });
       }
     }
@@ -245,217 +243,172 @@ canvas {
   function shufflePieces() {
     for (let i = puzzlePieces.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [puzzlePieces[i].x, puzzlePieces[j].x] = [puzzlePieces[j].x, puzzlePieces[i].x];
-      [puzzlePieces[i].y, puzzlePieces[j].y] = [puzzlePieces[j].y, puzzlePieces[i].y];
+      [puzzlePieces[i], puzzlePieces[j]] = [puzzlePieces[j], puzzlePieces[i]];
     }
   }
 
   function drawPuzzle() {
     ctx.clearRect(0, 0, puzzleCanvas.width, puzzleCanvas.height);
+    effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+
     puzzlePieces.forEach(piece => {
       ctx.drawImage(
         image,
-        piece.originalX * (image.naturalWidth / puzzleCanvas.width),
-        piece.originalY * (image.naturalHeight / puzzleCanvas.height),
-        piece.width * (image.naturalWidth / puzzleCanvas.width),
-        piece.height * (image.naturalHeight / puzzleCanvas.height),
-        piece.x,
-        piece.y,
-        piece.width,
-        piece.height
+        piece.originalX * (image.naturalWidth / puzzleCanvas.width), 
+        piece.originalY * (image.naturalHeight / puzzleCanvas.height), 
+        piece.width * (image.naturalWidth / puzzleCanvas.width), 
+        piece.height * (image.naturalHeight / puzzleCanvas.height), 
+        piece.x, 
+        piece.y, 
+        piece.width, 
+        piece.height 
       );
-      // Dibujar los bordes para todas las piezas
+      ctx.strokeStyle = '#555'; 
+      ctx.lineWidth = 1; 
       ctx.strokeRect(piece.x, piece.y, piece.width, piece.height);
     });
   }
 
-  function updateTimer() {
-    if (!paused && !puzzleEnded) {
-      const elapsedTime = Date.now() - startTime;
-      const minutes = Math.floor(elapsedTime / 60000);
-      const seconds = Math.floor((elapsedTime % 60000) / 1000);
-      timerDisplay.textContent = `Tiempo: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
-  }
-
-  // Helper para obtener la posición del evento (táctil o ratón)
-  function getEventPos(e) {
-    const rect = puzzleCanvas.getBoundingClientRect();
-    let clientX, clientY;
-    if (e.touches && e.touches.length > 0) {
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
-    } else {
-      clientX = e.clientX;
-      clientY = e.clientY;
-    }
-    return {
-      x: clientX - rect.left,
-      y: clientY - rect.top
-    };
-  }
-
-  // Eventos de ratón
-  puzzleCanvas.addEventListener('mousedown', startDrag);
-  puzzleCanvas.addEventListener('mousemove', drag);
-  puzzleCanvas.addEventListener('mouseup', endDrag);
-  puzzleCanvas.addEventListener('mouseout', endDrag); // Para cuando el ratón sale del canvas
-
-  // Eventos táctiles
-  puzzleCanvas.addEventListener('touchstart', (e) => {
-    e.preventDefault(); // Evita el scroll y zoom
-    startDrag(e);
-  });
-  puzzleCanvas.addEventListener('touchmove', (e) => {
-    e.preventDefault(); // Evita el scroll y zoom
-    drag(e);
-  });
-  puzzleCanvas.addEventListener('touchend', endDrag);
-
-  function startDrag(e) {
-    if (paused || puzzleEnded) return;
-
-    const pos = getEventPos(e);
+  function getPieceAt(x, y) {
     for (let i = puzzlePieces.length - 1; i >= 0; i--) {
-      const p = puzzlePieces[i];
-      if (pos.x > p.x && pos.x < p.x + p.width && pos.y > p.y && pos.y < p.y + p.height) {
-        currentPiece = p;
-        currentPiece.isDragging = true;
-        offsetX = pos.x - p.x;
-        offsetY = pos.y - p.y;
-        // Mover la pieza arrastrada al final del array para que se dibuje encima
-        puzzlePieces.splice(i, 1);
-        puzzlePieces.push(currentPiece);
-        drawPuzzle();
-        break;
+      const piece = puzzlePieces[i];
+      if (x > piece.x && x < piece.x + piece.width &&
+          y > piece.y && y < piece.y + piece.height) {
+        return piece;
       }
+    }
+    return null;
+  }
+
+  function swapPieces(p1, p2) {
+    [p1.x, p2.x] = [p2.x, p1.x];
+    [p1.y, p2.y] = [p2.y, p1.y];
+    drawPuzzle();
+    if (checkWin()) {
+      endPuzzle();
     }
   }
 
-  function drag(e) {
-    if (!currentPiece || paused || puzzleEnded) return;
-
-    const pos = getEventPos(e);
-    currentPiece.x = pos.x - offsetX;
-    currentPiece.y = pos.y - offsetY;
-    drawPuzzle();
+  function checkWin() {
+    for (let i = 0; i < puzzlePieces.length; i++) {
+      const piece = puzzlePieces[i];
+      if (piece.x !== piece.originalX || piece.y !== piece.originalY) {
+        return false;
+      }
+    }
+    return true;
   }
 
-  function endDrag() {
-    if (!currentPiece || paused || puzzleEnded) return;
-
-    currentPiece.isDragging = false;
-
-    // Ajustar a la posición más cercana de la cuadrícula original
-    const targetCol = Math.round(currentPiece.x / pieceWidth);
-    const targetRow = Math.round(currentPiece.y / pieceHeight);
-
-    currentPiece.x = targetCol * pieceWidth;
-    currentPiece.y = targetRow * pieceHeight;
-
-    // Evitar que la pieza se salga de los límites del canvas
-    currentPiece.x = Math.max(0, Math.min(currentPiece.x, puzzleCanvas.width - currentPiece.width));
-    currentPiece.y = Math.max(0, Math.min(currentPiece.y, puzzleCanvas.height - currentPiece.height));
-
-    drawPuzzle();
-    checkCompletion();
-    currentPiece = null;
+  function endPuzzle() {
+    puzzleEnded = true;
+    clearInterval(timerInterval);
+    completeMsg.style.display = 'block';
+    puzzleWrapper.style.borderColor = 'gold'; 
   }
 
-  function checkCompletion() {
-    const isCompleted = puzzlePieces.every(p => {
-      // Usar una pequeña tolerancia para la comparación de flotantes
-      const tolerance = 1; // 1 píxel
-      return Math.abs(p.x - p.originalX) < tolerance && Math.abs(p.y - p.originalY) < tolerance;
-    });
+  function updateTimer() {
+    if (paused || puzzleEnded) return;
+    const currentTime = Date.now();
+    const elapsedTime = Math.floor((currentTime - startTime) / 1000);
+    const minutes = Math.floor(elapsedTime / 60);
+    const seconds = elapsedTime % 60;
+    timerDisplay.textContent = `Tiempo: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
 
-    if (isCompleted) {
-      puzzleEnded = true; // El puzzle ha terminado
-      clearInterval(timerInterval);
-      completeMsg.style.display = 'block';
-      puzzleWrapper.style.borderColor = '#28a745'; // Borde verde
-      sendPuzzleCompletedMessage(); // Envía mensaje a la página padre
-      launchConfetti(); // Lanza el confeti
-
-      // Opcional: Centrar todas las piezas perfectamente si hay alguna pequeña desviación
-      puzzlePieces.forEach(p => {
-          p.x = p.originalX;
-          p.y = p.originalY;
-      });
+  function handleMouseDown(e) {
+    if (paused || puzzleEnded) return;
+    const rect = puzzleCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    currentPiece = getPieceAt(x, y);
+    if (currentPiece) {
+      offsetX = x - currentPiece.x;
+      offsetY = y - currentPiece.y;
+      puzzlePieces = puzzlePieces.filter(p => p !== currentPiece);
+      puzzlePieces.push(currentPiece);
       drawPuzzle();
-    }
-  }
-
-  function sendPuzzleCompletedMessage() {
-    if (window.parent) {
-      window.parent.postMessage('puzzle-completed', '*'); // Enviar a cualquier origen
-    }
-  }
-
-  // --- Efecto de Confeti ---
-  let confettiPieces = [];
-  const NUM_CONFETTI = 50;
-  const DURATION_CONFETTI = 3000; // 3 segundos
-
-  function launchConfetti() {
-    confettiPieces = [];
-    for (let i = 0; i < NUM_CONFETTI; i++) {
-      confettiPieces.push({
-        x: Math.random() * effectCanvas.width,
-        y: Math.random() * -effectCanvas.height, // Empiezan por encima del canvas
-        size: Math.random() * 10 + 5,
-        color: `hsl(${Math.random() * 360}, 100%, 70%)`,
-        speedY: Math.random() * 2 + 1,
-        tilt: Math.random() * Math.PI,
-        tiltSpeed: Math.random() * 0.07 - 0.035
-      });
-    }
-    animateConfetti(Date.now(), DURATION_CONFETTI);
-  }
-
-  function animateConfetti(startTime, duration) {
-    function loop(timestamp) {
-      let elapsed = timestamp - startTime;
       effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
-
-      if (elapsed < duration) {
-        confettiPieces.forEach(p => {
-          p.y += p.speedY;
-          p.tilt += p.tiltSpeed;
-          if (p.y > effectCanvas.height) {
-            p.x = Math.random() * effectCanvas.width;
-            p.y = Math.random() * -20;
-          }
-          effectCtx.save();
-          effectCtx.translate(p.x, p.y);
-          effectCtx.rotate(p.tilt);
-          effectCtx.fillStyle = p.color;
-          effectCtx.fillRect(-p.size/2, -p.size/4, p.size, p.size/2);
-          effectCtx.restore();
-        });
-        requestAnimationFrame(loop);
-      } else {
-        effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
-      }
     }
-    requestAnimationFrame(loop);
   }
 
-  restartBtn.addEventListener("click", () => {
-    paused = false;
-    puzzleEnded = false;
-    completeMsg.style.display = "none";
-    puzzleWrapper.style.borderColor = "#333";
-    init();
-  });
-  pauseBtn.addEventListener("click", () => {
+  function handleMouseMove(e) {
+    if (paused || puzzleEnded || !currentPiece) return;
+    const rect = puzzleCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    currentPiece.x = x - offsetX;
+    currentPiece.y = y - offsetY;
+    drawPuzzle();
+
+    effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+    const targetPiece = getPieceAt(x, y);
+    if (targetPiece && targetPiece !== currentPiece) {
+      effectCtx.strokeStyle = 'rgba(0, 255, 0, 0.7)';
+      effectCtx.lineWidth = 3;
+      effectCtx.strokeRect(targetPiece.x, targetPiece.y, targetPiece.width, targetPiece.height);
+    }
+  }
+
+  function handleMouseUp(e) {
+    if (paused || puzzleEnded || !currentPiece) return;
+    effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+
+    const rect = puzzleCanvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const targetPiece = getPieceAt(mouseX, mouseY);
+
+    if (targetPiece && targetPiece !== currentPiece) {
+      swapPieces(currentPiece, targetPiece);
+    }
+    currentPiece = null;
+    drawPuzzle();
+  }
+
+  function handleTouchStart(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    handleMouseDown({ clientX: touch.clientX, clientY: touch.clientY });
+  }
+
+  function handleTouchMove(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
+  }
+
+  function handleTouchEnd(e) {
+    e.preventDefault();
+    handleMouseUp({});
+  }
+
+  puzzleCanvas.addEventListener('mousedown', handleMouseDown);
+  puzzleCanvas.addEventListener('mousemove', handleMouseMove);
+  puzzleCanvas.addEventListener('mouseup', handleMouseUp);
+  puzzleCanvas.addEventListener('mouseleave', handleMouseUp);
+
+  puzzleCanvas.addEventListener('touchstart', handleTouchStart);
+  puzzleCanvas.addEventListener('touchmove', handleTouchMove);
+  puzzleCanvas.addEventListener('touchend', handleTouchEnd);
+  puzzleCanvas.addEventListener('touchcancel', handleTouchEnd);
+
+  restartBtn.addEventListener('click', init);
+  pauseBtn.addEventListener('click', () => {
     paused = !paused;
-    pauseBtn.textContent = paused ? "▶️ Continuar" : "⏸️ Pausar";
+    if (paused) {
+      pauseBtn.textContent = '▶️ Reanudar';
+      clearInterval(timerInterval);
+    } else {
+      pauseBtn.textContent = '⏸️ Pausar';
+      startTime = Date.now() - Math.floor(elapsedTime / 1000) * 1000; 
+      timerInterval = setInterval(updateTimer, 1000);
+    }
   });
 
-  // Inicializar al cargar la página y al redimensionar
-  window.addEventListener('load', init);
   window.addEventListener('resize', resizeCanvas);
+  resizeCanvas(); 
 </script>
 
 </body>
