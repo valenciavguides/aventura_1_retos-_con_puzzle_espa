@@ -162,17 +162,13 @@ canvas {
   const ctx = puzzleCanvas.getContext('2d');
   const effectCanvas = document.getElementById('effectCanvas');
   const effectCtx = effectCanvas.getContext('2d');
-  const imageSrc = 'imagenes_puzzles/P26_lonja.jpg';
+  const image = new Image();
+  const imageSrc = "imagenes_puzzles/P26_lonja.jpg";
   const restartBtn = document.getElementById('restartBtn');
   const pauseBtn = document.getElementById('pauseBtn');
   const completeMsg = document.getElementById('completeMessage');
   const puzzleWrapper = document.getElementById('puzzleWrapper');
   const timerDisplay = document.getElementById('timerDisplay');
-
-  // Ajustado: URL correcta de la imagen desde imgbb
-  const imageSrc = "imagenes_puzzles/P26_lonja.jpg";
-  const image = new Image();
-  image.crossOrigin = "Anonymous"; // Necesario para imágenes de diferentes dominios
   let puzzlePieces = [];
   let cols = 4; // Número de columnas
   let rows = 3; // Número de filas
