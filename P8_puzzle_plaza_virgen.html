@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Puzzle Interactivo</title>
+<style>
+/* Ajustes generales */
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: #f0f0f0;
+  font-family: sans-serif;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-start;
+  font-size: 16px; /* Asegura un tamaño base para 'em' y 'rem' */
+}
+
+h1 {
+  /* Adaptamos el tamaño del título del puzzle */
+  font-size: clamp(1.2em, 4vw, 1.8em); /* Tamaño flexible: min 1.2em, ideal 4vw, max 1.8em */
+  margin: 8px;
+  text-align: center;
+  padding: 0 5px; /* Pequeño padding horizontal para evitar que el texto toque los bordes */
+}
+
+#topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  width: 95vw;
+  max-width: 1000px;
+  gap: 10px;
+  /* ¡IMPORTANTE! Permitir que los elementos se envuelvan en pantallas pequeñas */
+  flex-wrap: wrap; /* Cambiado de 'nowrap' a 'wrap' */
+  padding: 0 5px; /* Pequeño padding horizontal */
+  box-sizing: border-box; /* Asegura que el padding no cause desbordamiento */
+}
+
+#leftControls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-shrink: 1;
+  min-width: 0; /* Permite que el contenedor se encoja */
+  flex-wrap: wrap; /* Para que los botones dentro también se envuelvan si es necesario */
+  justify-content: flex-start; /* Alineación para cuando se envuelvan */
+}
+
+/* Botones de control (Reiniciar, Pausar) y de chat (Enviar) */
+#restartBtn, #pauseBtn, #sendBtn {
+  /* Usamos clamp para un padding y tamaño de fuente responsivos */
+  padding: clamp(6px, 1.5vw, 10px) clamp(10px, 3vw, 20px);
+  font-size: clamp(0.8em, 2.5vw, 1em);
+  background: white;
+  border: 1px solid #ccc; /* Bordes de igual grosor */
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap; /* Evita que el texto del botón se rompa en varias líneas */
+  flex-shrink: 0; /* Evita que el botón se encoja demasiado */
+  height: auto; /* Permite que la altura se ajuste al contenido */
+  box-sizing: border-box; /* Incluye padding y borde en el tamaño total */
+}
+#pauseBtn {
+  background: #f0f0f0; /* Color diferente para el botón de pausa */
+}
+#restartBtn:active, #pauseBtn:active, #sendBtn:active {
+    transform: translateY(1px); /* Efecto al presionar */
+}
+
+/* Campo de entrada de mensaje */
+#messageInput {
+  flex-grow: 1; /* Permite que el input ocupe el espacio disponible */
+  padding: clamp(6px, 1.5vw, 10px);
+  font-size: clamp(0.8em, 2.5vw, 1em);
+  border: 1px solid #ccc; /* Bordes de igual grosor */
+  border-radius: 5px;
+  min-width: 0; /* Importante para que no desborde en flexbox */
+  box-sizing: border-box;
+}
+
+/* Mensaje de completado y controles de tiempo/movimientos */
+#completeMsg {
+  font-size: clamp(1em, 3vw, 1.5em); /* Mensaje responsivo */
+  margin-top: 20px;
+  text-align: center;
+  color: green;
+  font-weight: bold;
+}
+
+#timer, #moves {
+  font-size: clamp(0.9em, 2.5vw, 1.1em); /* Tamaños responsivos */
+  white-space: nowrap; /* Evita que el texto se rompa */
+  flex-shrink: 0; /* Evita que se encoja demasiado */
+}
+
+/* Contenedor del puzzle y lienzo */
+#puzzleWrapper {
+  position: relative;
+  /* Asegura que el borde tenga igual grosor */
+  border: 3px solid #333;
+  border-radius: 8px;
+  box-sizing: border-box; /* Incluye borde y padding en el tamaño */
+  overflow: hidden; /* Importante para que el borde se vea bien */
+  /* El JavaScript ajustará el tamaño exacto del canvas */
+  max-width: 95vw; /* Más margen para pantallas pequeñas */
+  max-height: 80vh; /* Permite que el puzzle ocupe más altura */
+  min-width: 250px; /* Mínimo para que sea jugable */
+  min-height: 250px; /* Mínimo para que sea jugable */
+  width: 100%; /* Asegura que el wrapper use todo el ancho disponible hasta max-width */
+  height: auto; /* Permite que la altura se ajuste, el JS luego lo fijará */
+  aspect-ratio: 1 / 1; /* Mantiene la proporción cuadrada del puzzle si es el caso */
+}
+
+canvas {
+  display: block;
+  /* Los bordes deben ser siempre de igual grosor: Esto ya lo gestiona #puzzleWrapper */
+  /* Asegurarse de que el canvas no tenga bordes adicionales */
+  border: none;
+}
+
+/* Media Queries (ajustes específicos para pantallas muy pequeñas) */
+@media (max-width: 480px) {
+  #topBar {
+    flex-direction: column; /* Apilar controles en pantallas muy estrechas */
+    align-items: center; /* Centrar al apilar */
+  }
+  #leftControls {
+    width: 100%; /* Ocupar todo el ancho disponible */
+    justify-content: center; /* Centrar botones si hay dos */
+    margin-bottom: 5px; /* Espacio entre filas */
+  }
+  #messageInput {
+    width: 100%; /* Ocupar todo el ancho disponible */
+    margin-top: 5px; /* Espacio entre input y botones */
+  }
+  #sendBtn {
+    width: 100%; /* Ocupar todo el ancho disponible */
+    margin-top: 5px; /* Espacio entre input y botones */
+  }
+}
+</style>
+</head>
+<body>
+<h1>Puzzle Plaza de la Virgen</h1>
+<div id="topBar">
+  <div id="leftControls">
+    <button id="restartBtn">🔄 Reiniciar</button>
+    <button id="pauseBtn">⏸️ Pausa</button>
+    <span id="timer">03:00</span>
+  </div>
+</div>
+<div id="puzzleWrapper">
+  <canvas id="puzzleCanvas"></canvas>
+  <div id="completeMsg">
+    <strong id="messageText"></strong><br />
+  </div>
+</div>
+<script>
+const canvas = document.getElementById("puzzleCanvas");
+const ctx = canvas.getContext("2d");
+// URL de la imagen para el puzzle de la Plaza de la Virgen
+const imageSrc = "imagenes_puzzles/P8_plaza_de_la_virgen.jpg"; 
+const rows = 3, cols = 4;
+let pieces = [], draggingPiece = null;
+let offsetX = 0, offsetY = 0, placedCount = 0;
+let img = new Image();
+let animatingPiece = null, animFrame = 0, animDirection = 1, animScale = 1;
+const completeMsg = document.getElementById("completeMsg");
+const messageText = document.getElementById("messageText");
+const restartBtn = document.getElementById("restartBtn");
+const pauseBtn = document.getElementById("pauseBtn");
+const timerDisplay = document.getElementById("timer");
+const puzzleWrapper = document.getElementById("puzzleWrapper");
+const placeSound = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg");
+const failSound = new Audio("https://actions.google.com/sounds/v1/cartoon/concussive_hit_guitar_boing.ogg");
+const successSound = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
+placeSound.volume = 0.3; failSound.volume = 0.4; successSound.volume = 0.5;
+let paused = false, timeLeft = 180, timerInterval;
+let puzzleEnded = false;
+
+const effectCanvas = document.createElement("canvas");
+const effectCtx = effectCanvas.getContext("2d");
+effectCanvas.style.position = "absolute";
+effectCanvas.style.top = "0";
+effectCanvas.style.left = "0";
+effectCanvas.style.pointerEvents = "none";
+effectCanvas.style.width = "100%";
+effectCanvas.style.height = "100%";
+puzzleWrapper.appendChild(effectCanvas);
+
+img.onload = () => { init(); };
+img.src = imageSrc;
+
+window.addEventListener("resize", resizePieces);
+window.addEventListener("orientationchange", () => setTimeout(resizePieces, 300));
+
+function resizePieces() {
+  const w = puzzleWrapper.clientWidth;
+  const h = puzzleWrapper.clientHeight;
+  canvas.width = w;
+  canvas.height = h;
+  effectCanvas.width = w;
+  effectCanvas.height = h;
+  const pw = w / cols;
+  const ph = h / rows;
+
+  pieces.forEach(p => {
+    const colIndex = Math.round(p.correctX / p.w);
+    const rowIndex = Math.round(p.correctY / p.h);
+    p.w = pw;
+    p.h = ph;
+    p.correctX = colIndex * pw;
+    p.correctY = rowIndex * ph;
+    if (p.placed) {
+      p.x = p.correctX;
+      p.y = p.correctY;
+    } else {
+      p.x = Math.min(p.x * (w / canvas.width), w - pw);
+      p.y = Math.min(p.y * (h / canvas.height), h - ph);
+    }
+  });
+  draw();
+}
+
+function init() {
+  puzzleEnded = false;
+  const w = puzzleWrapper.clientWidth, h = puzzleWrapper.clientHeight;
+  canvas.width = w; canvas.height = h;
+  effectCanvas.width = w; effectCanvas.height = h;
+  const pw = w / cols, ph = h / rows;
+
+  pieces = []; placedCount = 0;
+  completeMsg.style.display = "none";
+  puzzleWrapper.style.borderColor = "#333";
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      pieces.push({
+        sx: c * img.width / cols, sy: r * img.height / rows,
+        sw: img.width / cols, sh: img.height / rows,
+        x: Math.random() * (w - pw), y: Math.random() * (h - ph),
+        w: pw, h: ph, correctX: c * pw, correctY: r * ph,
+        placed: false, scale: 1
+      });
+    }
+  }
+
+  timeLeft = 180; // Reiniciar tiempo
+  updateTimerDisplay(); // Actualizar visualmente
+  startTimer(); // Iniciar cuenta
+  draw();
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (const p of pieces.filter(p => p.placed)) drawPiece(p);
+  for (const p of pieces.filter(p => !p.placed)) drawPiece(p);
+  if (animatingPiece) {
+    animatingPiece.scale = animScale; 
+    animFrame++;
+    animScale += 0.05 * animDirection;
+    if (animFrame >= 10) animDirection = -1;
+    if (animFrame >= 20) {
+      animatingPiece.scale = 1;
+      animatingPiece = null;
+      animFrame = 0; animDirection = 1;
+    }
+  }
+  requestAnimationFrame(draw);
+}
+
+function drawPiece(piece) {
+  ctx.save();
+  ctx.translate(piece.x + piece.w / 2, piece.y + piece.h / 2);
+  ctx.scale(piece.scale, piece.scale);
+  ctx.translate(-piece.w / 2, -piece.h / 2);
+  ctx.drawImage(img, piece.sx, piece.sy, piece.sw, piece.sh, 0, 0, piece.w, piece.h);
+  ctx.restore();
+}
+
+function onPointerDown(e) {
+  if (puzzleEnded || paused) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  for (let i = pieces.length - 1; i >= 0; i--) {
+    const p = pieces[i];
+    if (!p.placed && x >= p.x && x <= p.x + p.w && y >= p.y && y <= p.y + p.h) {
+      draggingPiece = p;
+      offsetX = x - p.x;
+      offsetY = y - p.y;
+      break;
+    }
+  }
+}
+
+function onPointerMove(e) {
+  if (!draggingPiece || puzzleEnded || paused) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  draggingPiece.x = Math.min(Math.max(x - offsetX, 0), canvas.width - draggingPiece.w);
+  draggingPiece.y = Math.min(Math.max(y - offsetY, 0), canvas.height - draggingPiece.h);
+}
+
+function onPointerUp(e) {
+  if (!draggingPiece || puzzleEnded || paused) return;
+  if (Math.abs(draggingPiece.x - draggingPiece.correctX) < draggingPiece.w / 4 &&
+      Math.abs(draggingPiece.y - draggingPiece.correctY) < draggingPiece.h / 4) {
+    draggingPiece.x = draggingPiece.correctX;
+    draggingPiece.y = draggingPiece.correctY;
+    draggingPiece.placed = true;
+    placedCount++;
+    placeSound.play();
+    animatingPiece = draggingPiece;
+    animFrame = 0; animDirection = 1; animScale = 1; 
+  } 
+  // Eliminado: else { failSound.play(); } -> para quitar el sonido al colocar mal una pieza.
+  draggingPiece = null;
+  if (placedCount === pieces.length) {
+    endPuzzle(true);
+  }
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if (!paused && !puzzleEnded) {
+      timeLeft--;
+      updateTimerDisplay();
+      if (timeLeft <= 0) {
+        endPuzzle(false);
+      }
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timeLeft / 60);
+  const s = timeLeft % 60;
+  timerDisplay.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+}
+
+function endPuzzle(success) {
+  puzzleEnded = true;
+  clearInterval(timerInterval);
+  completeMsg.style.display = "block";
+
+  if (success) {
+    successSound.play();
+    messageText.textContent = "🎉 ¡Puzzle completado!";
+    puzzleWrapper.style.borderColor = "green";
+    runFireworks(); 
+    window.parent.postMessage("puzzle-completed", "*"); 
+
+  } else {
+    failSound.play();
+    messageText.textContent = "⏰ Tiempo agotado. Gracias por participar."; 
+    puzzleWrapper.style.borderColor = "red";
+    runConfetti(); 
+    window.parent.postMessage("puzzle-timeout", "*"); 
+  }
+}
+
+function runFireworks() {
+  let duration = 5000;
+  let startTime = null;
+  const particles = [];
+  const colors = ["#ff2e2e","#ff7f50","#ffcc00","#3cff5f","#1e90ff","#9b30ff"];
+
+  effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+
+  function createParticle(x, y) {
+    return {
+      x, y,
+      vx: (Math.random() - 0.5) * 6,
+      vy: (Math.random() - 0.5) * 6,
+      life: 100,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      size: Math.random() * 3 + 2
+    };
+  }
+
+  function loop(timestamp) {
+    if (!startTime) startTime = timestamp;
+    let elapsed = timestamp - startTime;
+    effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+
+    if (elapsed < duration) {
+      if (particles.length < 100) {
+        let x = Math.random() * effectCanvas.width;
+        let y = Math.random() * effectCanvas.height / 2;
+        for(let i=0; i<5; i++) {
+          particles.push(createParticle(x, y));
+        }
+      }
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.1;
+        p.life--;
+        if (p.life <= 0) particles.splice(i, 1);
+        else {
+          effectCtx.beginPath();
+          effectCtx.fillStyle = p.color;
+          effectCtx.shadowColor = p.color;
+          effectCtx.shadowBlur = 10;
+          effectCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          effectCtx.fill();
+          effectCtx.closePath();
+        }
+      }
+      requestAnimationFrame(loop);
+    } else {
+      effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+    }
+  }
+  requestAnimationFrame(loop);
+}
+
+function runConfetti() {
+  let duration = 5000;
+  let startTime = null;
+  const confettiPieces = [];
+  const colors = ["#ff0","#f0f","#0ff","#0f0","#00f","#f00"];
+
+  effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+
+  function createConfetti() {
+    return {
+      x: Math.random() * effectCanvas.width,
+      y: Math.random() * -20,
+      size: Math.random() * 8 + 8,
+      speedY: Math.random() * 3 + 2,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      tilt: Math.random() * 10 - 5,
+      tiltSpeed: Math.random() * 0.1 + 0.05
+    };
+  }
+
+  for(let i = 0; i < 150; i++) {
+    confettiPieces.push(createConfetti());
+  }
+
+  function loop(timestamp) {
+    if (!startTime) startTime = timestamp;
+    let elapsed = timestamp - startTime;
+    effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+
+    if (elapsed < duration) {
+      confettiPieces.forEach(p => {
+        p.y += p.speedY;
+        p.tilt += p.tiltSpeed;
+        if (p.y > effectCanvas.height) {
+          p.x = Math.random() * effectCanvas.width;
+          p.y = Math.random() * -20;
+        }
+        effectCtx.save();
+        effectCtx.translate(p.x, p.y);
+        effectCtx.rotate(p.tilt);
+        effectCtx.fillStyle = p.color;
+        effectCtx.fillRect(-p.size/2, -p.size/4, p.size, p.size/2);
+        effectCtx.restore();
+      });
+      requestAnimationFrame(loop);
+    } else {
+      effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+    }
+  }
+  requestAnimationFrame(loop);
+}
+
+restartBtn.addEventListener("click", () => {
+  paused = false;
+  puzzleEnded = false;
+  completeMsg.style.display = "none";
+  puzzleWrapper.style.borderColor = "#333";
+  init();
+});
+pauseBtn.addEventListener("click", () => {
+  paused = !paused;
+  pauseBtn.textContent = paused ? "▶️ Continuar" : "⏸️ Pausa";
+});
+
+canvas.addEventListener("pointerdown", onPointerDown);
+canvas.addEventListener("pointermove", onPointerMove);
+canvas.addEventListener("pointerup", onPointerUp);
+canvas.addEventListener("pointercancel", onPointerUp);
+canvas.addEventListener("pointerout", onPointerUp);
+canvas.addEventListener("pointerleave", onPointerUp);
+
+</script>
+</body>
+</html>
