@@ -123,27 +123,15 @@
         <div id="completeMessage">¡Puzzle Completado! 🎉</div>
     </div>
 
-    <script>
+   <script>
     const puzzleCanvas = document.getElementById('puzzleCanvas');
     const ctx = puzzleCanvas.getContext('2d');
     const effectCanvas = document.getElementById('effectCanvas');
     const effectCtx = effectCanvas.getContext('2d');
     
     const image = new Image();
-    const imageSrc = "imagenes_puzzles/P8_plaza_de_la_virgen.jpg"; // <--- CAMBIA ESTO PARA CADA PUZZLE
-
-    // Asegura que la imagen se cargue completamente antes de inicializar
-    image.onload = () => {
-        // Redimensiona los canvases antes de iniciar el puzzle
-        resizeCanvas(); 
-        init(); 
-    };
-    image.onerror = () => {
-        console.error("Error al cargar la imagen:", imageSrc);
-        // Puedes mostrar un mensaje de error al usuario aquí
-        alert("No se pudo cargar la imagen del puzzle. Intenta recargar la página.");
-    };
-    image.src = imageSrc; // ¡Inicia la carga de la imagen!
+    // *** RUTA DE IMAGEN PARA PLAZA DE LA VIRGEN ***
+    const imageSrc = "/imagenes_puzzles/P8_plaza_de_la_virgen.jpg"; 
 
     const restartBtn = document.getElementById('restartBtn');
     const pauseBtn = document.getElementById('pauseBtn');
@@ -160,18 +148,25 @@
     let paused = false;
     let puzzleEnded = false; 
 
+    image.onload = () => {
+        resizeCanvas(); 
+        init(); 
+    };
+    image.onerror = () => {
+        console.error("Error al cargar la imagen:", imageSrc);
+        alert("No se pudo cargar la imagen del puzzle. Intenta recargar la página.");
+    };
+    image.src = imageSrc;
+
     function resizeCanvas() {
-        // Asegúrate de que el wrapper tenga dimensiones antes de obtenerlas
         const wrapperRect = puzzleWrapper.getBoundingClientRect();
         
-        // Ajusta las dimensiones del canvas a las del wrapper
         puzzleCanvas.width = wrapperRect.width;
         puzzleCanvas.height = wrapperRect.height;
         effectCanvas.width = wrapperRect.width;
         effectCanvas.height = wrapperRect.height;
 
-        // Recalcula el tamaño de las piezas y redibuja si la imagen ya cargó
-        if (image.complete && image.naturalWidth > 0) {
+        if (puzzlePieces.length > 0) {
             pieceWidth = puzzleCanvas.width / cols;
             pieceHeight = puzzleCanvas.height / rows;
             drawPuzzle(); 
@@ -187,8 +182,6 @@
         timerDisplay.textContent = 'Tiempo: 00:00';
         clearInterval(timerInterval);
 
-        // Asegúrate de que pieceWidth y pieceHeight se calculen aquí después del redimensionado
-        // Esto es crucial para que las piezas tengan el tamaño correcto
         pieceWidth = puzzleCanvas.width / cols;
         pieceHeight = puzzleCanvas.height / rows;
 
@@ -204,9 +197,9 @@
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
                 puzzlePieces.push({
-                    x: c * pieceWidth,
+                    x: c * pieceWidth, 
                     y: r * pieceHeight,
-                    originalX: c * pieceWidth,
+                    originalX: c * pieceWidth, 
                     originalY: r * pieceHeight,
                     width: pieceWidth,
                     height: pieceHeight,
@@ -222,7 +215,8 @@
     function shufflePieces() {
         for (let i = puzzlePieces.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [puzzlePieces[i], puzzlePieces[j]] = [puzzlePieces[j], puzzlePieces[i]];
+            [puzzlePieces[i].x, puzzlePieces[j].x] = [puzzlePieces[j].x, puzzlePieces[i].x];
+            [puzzlePieces[i].y, puzzlePieces[j].y] = [puzzlePieces[j].y, puzzlePieces[i].y];
         }
     }
 
@@ -233,12 +227,10 @@
         puzzlePieces.forEach(piece => {
             ctx.drawImage(
                 image,
-                // Coordenadas de origen en la imagen (para la parte de la imagen)
                 piece.originalX * (image.naturalWidth / puzzleCanvas.width), 
                 piece.originalY * (image.naturalHeight / puzzleCanvas.height), 
                 piece.width * (image.naturalWidth / puzzleCanvas.width), 
                 piece.height * (image.naturalHeight / puzzleCanvas.height), 
-                // Coordenadas de destino en el canvas (donde se dibujará la pieza)
                 piece.x, 
                 piece.y, 
                 piece.width, 
@@ -285,7 +277,6 @@
         clearInterval(timerInterval);
         completeMsg.style.display = 'block';
         puzzleWrapper.style.borderColor = 'gold';
-        // AÑADE ESTA LÍNEA para notificar a la página padre
         window.parent.postMessage('puzzle-completed', '*');
     }
 
@@ -385,7 +376,6 @@
             clearInterval(timerInterval);
         } else {
             pauseBtn.textContent = '⏸️ Pausar';
-            // Para ajustar el tiempo al reanudar
             const currentTime = Date.now();
             const currentElapsedTime = Math.floor((currentTime - startTime) / 1000);
             startTime = Date.now() - currentElapsedTime * 1000;
@@ -393,11 +383,7 @@
         }
     });
 
-    // Escucha el evento de redimensionamiento de la ventana
     window.addEventListener('resize', resizeCanvas);
-    // Llama a resizeCanvas inicialmente para establecer el tamaño correcto
-    // Esto se ejecutará ANTES de que la imagen cargue, lo cual está bien.
-    // El 'init' se encarga de re-calcular piezas una vez la imagen esté lista.
     resizeCanvas(); 
 </script>
 </body>
