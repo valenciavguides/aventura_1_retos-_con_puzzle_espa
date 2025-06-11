@@ -59,7 +59,7 @@
     align-items: center; /* Alinea verticalmente los botones si tienen alturas diferentes */
   }
 
-  button.btn, button#btnMostrarRespuesta, button#btnNextAfterReto {
+  button.btn, button#btnMostrarRespuesta, button#btnNextAfterReto, button#btnReintentarPuzzle {
     padding: 0.6em 1.2em;
     font-size: 1.1em;
     border: none;
@@ -73,10 +73,16 @@
     background-color: #999;
     cursor: not-allowed;
   }
-  #btnMostrarRespuesta, #btnNextAfterReto {
+  #btnMostrarRespuesta, #btnNextAfterReto, #btnReintentarPuzzle {
     display: none; /* Por defecto ocultos, su visibilidad se controla con JS */
-    background-color: #28a745;
   }
+  #btnMostrarRespuesta {
+    background-color: #28a745; /* Color para mostrar respuesta */
+  }
+    #btnReintentarPuzzle {
+        background-color: #ffc107; /* Color para reintentar (amarillo) */
+        color: #333; /* Texto más oscuro para el amarillo */
+    }
   #respuestaCorrectaTexto {
     margin-top: 1em;
     font-weight: bold;
@@ -114,7 +120,7 @@
       padding: 0.8em; /* Reduce el padding del reto */
     }
    /* Botones de enviar, siguiente, mostrar respuesta */
-#btnEnviar, #btnNext, #btnMostrarRespuesta {
+#btnEnviar, #btnNext, #btnMostrarRespuesta, #btnReintentarPuzzle {
   padding: 0.8em 1.5em; /* Padding relativo */
   font-size: 1em; /* Tamaño de fuente relativo al body */
   border: 2px solid #007bff;
@@ -135,6 +141,15 @@
   background-color: #ec971f;
   border-color: #ec971f;
 }
+    #btnReintentarPuzzle {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #333;
+    }
+    #btnReintentarPuzzle:hover {
+        background-color: #e0a800;
+        border-color: #e0a800;
+    }
 
   /* Estilos específicos para el iframe del puzzle */
   #puzzleIframe {
@@ -154,7 +169,7 @@
 
 <div id="button-container">
   <button id="btnMostrarRespuesta">Respuesta Correcta</button>
-  <button id="btnNextAfterReto">Siguiente</button>
+  <button id="btnReintentarPuzzle">Reintentar Puzzle</button>   <button id="btnNextAfterReto">Siguiente</button>
 </div>
 <div id="respuestaCorrectaTexto"></div>
 
@@ -379,8 +394,10 @@ btnEnviar.textContent = "Enviar";
 btnEnviar.className = "btn";
 
 const btnMostrarRespuesta = document.getElementById("btnMostrarRespuesta");
+const btnReintentarPuzzle = document.getElementById("btnReintentarPuzzle"); // Referencia al nuevo botón
 const divRespuestaCorrecta = document.getElementById("respuestaCorrectaTexto");
-const btnNext = document.getElementById("btnNextAfterReto");
+const btnNext = document.getElementById("btnNextAfterReto"); // Este será ahora "Siguiente" o "Continuar"
+
 const fuegosDiv = document.getElementById("fuegos");
 
 // Duración total de la animación de fuegos artificiales (3 segundos)
@@ -389,11 +406,11 @@ const DURACION_TOTAL_MS = 3000;
 /* Función para limpiar el reto y mostrar uno nuevo */
 function mostrarReto() {
   btnNext.style.display = "none"; // btnNext siempre oculto al inicio de un nuevo reto
+  btnReintentarPuzzle.style.display = "none"; // Nuevo: Oculta el botón de reintentar
   btnMostrarRespuesta.style.display = "none"; // Ocultamos el botón de respuesta al cargar un nuevo reto
   divRespuestaCorrecta.textContent = "";
   retoDiv.classList.remove("correct", "incorrect");
   fuegosDiv.innerHTML = ""; // Siempre limpia los fuegos al mostrar un nuevo reto
-  btnNext.textContent = "Siguiente"; // Restablece el texto del botón a "Siguiente" por defecto
 
   const reto = retos[indiceReto];
   retoDiv.innerHTML = "";
@@ -511,165 +528,4 @@ function fuegosArtificiales() {
 
 /* Función para vibrar solo al fallar */
 function vibrarFallido() {
-  if (navigator.vibrate) navigator.vibrate(300);
-}
-
-/* Función para verificar la respuesta */
-function verificar() {
-  const reto = retos[indiceReto];
-  btnEnviar.disabled = true;
-  divRespuestaCorrecta.textContent = "";
-  retoDiv.classList.remove("correct", "incorrect");
-  fuegosDiv.innerHTML = "";
-
-  btnNext.style.display = "none";
-  btnNext.textContent = "Siguiente"; // Restablece el texto del botón al verificar un reto no-puzzle
-
-  if (reto.tipo === "opcion") {
-    const seleccion = document.querySelector('input[name="op"]:checked');
-    if (!seleccion) {
-      alert("Por favor, seleccione una opción.");
-      btnEnviar.disabled = false;
-      return;
-    }
-    const valor = seleccion.value;
-    if (reto.correctas.includes(valor)) {
-      retoDiv.classList.add("correct");
-      fuegosArtificiales();
-      btnMostrarRespuesta.style.display = "inline-block";
-      setTimeout(() => {
-        btnNext.style.display = "inline-block";
-      }, DURACION_TOTAL_MS);
-    } else {
-      retoDiv.classList.add("incorrect");
-      vibrarFallido();
-      btnEnviar.disabled = false;
-    }
-  } else if (reto.tipo === "opcion-multiple") {
-    const checks = Array.from(document.querySelectorAll('input[name="op"]:checked')).map(i => i.value);
-    if (checks.length === 0) {
-      alert("Por favor, seleccione al menos una opción.");
-      btnEnviar.disabled = false;
-      return;
-    }
-    let esCorrecto = true;
-    reto.correctas.forEach(c => {
-      if (!checks.includes(c)) esCorrecto = false;
-    });
-    checks.forEach(s => {
-      if (!reto.correctas.includes(s)) esCorrecto = false;
-    });
-
-    if (esCorrecto) {
-      retoDiv.classList.add("correct");
-      fuegosArtificiales();
-      btnMostrarRespuesta.style.display = "inline-block";
-      setTimeout(() => {
-        btnNext.style.display = "inline-block";
-      }, DURACION_TOTAL_MS);
-    } else {
-      retoDiv.classList.add("incorrect");
-      vibrarFallido();
-      btnEnviar.disabled = false;
-    }
-  } else if (reto.tipo === "texto") {
-    // Para los retos de tipo "texto", tu lógica actual siempre los marca como correctos
-    // Considera añadir una validación aquí si la respuesta de texto debe ser específica.
-    // Por ahora, mantengo tu comportamiento actual que siempre lanza fuegos y avanza.
-    retoDiv.classList.add("correct");
-    fuegosArtificiales();
-    btnMostrarRespuesta.style.display = "inline-block";
-    setTimeout(() => {
-      btnNext.style.display = "inline-block";
-    }, DURACION_TOTAL_MS);
-  }
-}
-
-/* Mostrar respuesta correcta */
-btnMostrarRespuesta.addEventListener("click", () => {
-  const reto = retos[indiceReto];
-  if (reto.tipo === "opcion" || reto.tipo === "opcion-multiple") {
-    divRespuestaCorrecta.textContent = "Respuesta correcta: " + reto.correctas.join(", ");
-  } else if (reto.tipo === "texto") {
-    divRespuestaCorrecta.textContent = "Respuesta correcta: " + reto.correctaTexto;
-  } else {
-    divRespuestaCorrecta.textContent = "No hay respuesta correcta disponible.";
-  }
-});
-
-/* Botón siguiente */
-btnNext.addEventListener("click", () => {
-  // Si el texto del botón es "Reintentar Puzzle", recargamos el mismo puzzle
-  if (btnNext.textContent === "Reintentar Puzzle") {
-    const currentPuzzleSrc = retos[indiceReto].puzzleSrc;
-    const puzzleIframe = document.getElementById('puzzleIframe');
-    if (puzzleIframe && currentPuzzleSrc) {
-      puzzleIframe.src = currentPuzzleSrc; // Recarga el iframe
-      console.log('Recargando el puzzle para reintentar...');
-      // Limpiamos el estado visual para que el usuario pueda intentarlo de nuevo
-      retoDiv.classList.remove("incorrect");
-      divRespuestaCorrecta.textContent = "";
-      btnNext.style.display = "none"; // Oculta el botón mientras juega de nuevo
-      btnNext.textContent = "Siguiente"; // Restablece el texto para el siguiente avance
-    } else {
-      // Si no se encuentra el iframe o la URL, simplemente avanzamos
-      indiceReto++;
-      if (indiceReto >= retos.length) {
-        alert("¡Has terminado todos los retos!");
-        indiceReto = 0; 
-      }
-      mostrarReto();
-    }
-  } else {
-    // Comportamiento normal: avanzar al siguiente reto
-    indiceReto++;
-    if (indiceReto >= retos.length) {
-      alert("¡Has terminado todos los retos!");
-      indiceReto = 0; 
-    }
-    mostrarReto();
-  }
-});
-
-/* Botón enviar */
-btnEnviar.addEventListener("click", verificar);
-
-/* Listener para mensajes del iframe del puzzle */
-window.addEventListener("message", (event) => {
-  // Puedes añadir una verificación de origen si tus puzzles se alojan en un dominio diferente
-  // if (event.origin !== "https://valenciavguides.github.io") return; // Ejemplo
-
-  if (event.data === "puzzle-completed") {
-    console.log('Mensaje recibido: Puzzle completado. ¡Avanzando al siguiente reto!');
-    retoDiv.classList.add("correct"); // Añade el borde verde al contenedor principal
-    fuegosArtificiales(); // Muestra la animación de fuegos
-    divRespuestaCorrecta.textContent = "🎉 ¡Puzzle Resuelto con Éxito!"; // Mensaje de éxito
-    btnMostrarRespuesta.style.display = "none"; // Oculta el botón de "Respuesta Correcta" para puzzles
-
-    // Después de la animación, muestra el botón Siguiente y avanza automáticamente
-    setTimeout(() => {
-      btnNext.style.display = "inline-block";
-      btnNext.textContent = "Siguiente"; // Asegúrate de que el texto sea "Siguiente" para el avance normal
-      btnNext.click(); // Simula un click en el botón Siguiente para avanzar automáticamente
-    }, DURACION_TOTAL_MS); // Espera a que la animación de fuegos termine
-  } else if (event.data === "puzzle-timeout") {
-    console.log('Mensaje recibido: Tiempo del puzzle agotado. Ofreciendo reintentar o avanzar.');
-    retoDiv.classList.add("incorrect"); // Añade el borde rojo al contenedor principal
-    vibrarFallido(); // Activa la vibración
-    divRespuestaCorrecta.textContent = "⏰ Tiempo agotado. Puedes reintentar o ir al siguiente reto."; // Mensaje de tiempo agotado
-    btnMostrarRespuesta.style.display = "none"; // Oculta el botón de "Respuesta Correcta"
-    
-    // Muestra el botón y cambia su texto para ofrecer reintento
-    btnNext.style.display = "inline-block"; 
-    btnNext.textContent = "Reintentar Puzzle"; // Cambia el texto del botón
-  }
-});
-
-
-/* Mostrar primer reto al cargar */
-mostrarReto();
-
-</script>
-
-</body>
-</html>
+  if (navigator.vibrate)
