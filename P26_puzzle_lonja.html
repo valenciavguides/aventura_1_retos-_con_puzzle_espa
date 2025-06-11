@@ -283,7 +283,9 @@
         puzzleEnded = true;
         clearInterval(timerInterval);
         completeMsg.style.display = 'block';
-        puzzleWrapper.style.borderColor = 'gold'; 
+        puzzleWrapper.style.borderColor = 'gold';
+        // AÑADE ESTA LÍNEA para notificar a la página padre
+        window.parent.postMessage('puzzle-completed', '*');
     }
 
     function updateTimer() {
