@@ -1,424 +1,544 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puzzle 26: Lonja de la Seda</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #2c3e50;
-            font-family: 'Press Start 2P', cursive;
-            color: #ecf0f1;
-            overflow: hidden;
-        }
-        .puzzle-container {
-            text-align: center;
-            background-color: #34495e;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-            max-width: 90vw;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        #puzzleWrapper {
-            position: relative;
-            width: clamp(280px, 80vw, 800px);
-            padding-bottom: 56.25%; /* Ratio 16:9 */
-            height: 0;
-            border: 5px solid #333;
-            box-sizing: border-box;
-            background-color: #222;
-            margin-bottom: 20px;
-            overflow: hidden;
-            display: block;
-        }
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: block;
-            touch-action: none;
-        }
-        #puzzleCanvas {
-            z-index: 1;
-        }
-        #effectCanvas {
-            z-index: 2;
-            pointer-events: none;
-        }
-        .controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        button {
-            background-color: #e67e22;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 0.7em;
-            transition: background-color 0.3s ease;
-        }
-        button:hover {
-            background-color: #d35400;
-        }
-        #timerDisplay {
-            font-size: 1em;
-            margin-top: 10px;
-            background-color: #2c3e50;
-            padding: 5px 10px;
-            border-radius: 5px;
-        }
-        #completeMessage {
-            font-size: 1.2em;
-            color: gold;
-            margin-top: 20px;
-            display: none;
-        }
-
-        @media (max-width: 600px) {
-            .puzzle-container {
-                padding: 10px;
-            }
-            button {
-                font-size: 0.6em;
-                padding: 8px 10px;
-            }
-            #timerDisplay {
-                font-size: 0.8em;
-            }
-            #completeMessage {
-                font-size: 1em;
-            }
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Puzzle 18: Plaza de Toros y Estación del Norte</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+<style>
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: #2c3e50;
+    font-family: 'Press Start 2P', cursive;
+    color: #ecf0f1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    overflow: hidden;
+  }
+  h1 {
+    font-size: 1.2em;
+    margin: 8px;
+    text-align: center;
+  }
+  #topBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    width: 95vw;
+    max-width: 1000px;
+    gap: 10px;
+    flex-wrap: nowrap;
+  }
+  #leftControls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+  #restartBtn, #pauseBtn, #continueBtn {
+    background-color: #e67e22;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.7em;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+  }
+  #restartBtn:hover, #pauseBtn:hover, #continueBtn:hover {
+    background-color: #d35400;
+  }
+  #timer {
+    font-size: 1em;
+    font-weight: bold;
+    min-width: 60px;
+    text-align: center;
+    white-space: nowrap;
+    background-color: #2c3e50;
+    padding: 5px 10px;
+    border-radius: 5px;
+  }
+  #continueBtn {
+    display: none;
+    flex-shrink: 0;
+  }
+  #puzzleWrapper {
+    width: 95vw;
+    max-width: 1000px;
+    aspect-ratio: 4 / 3;
+    background: #222;
+    position: relative;
+    border: 5px solid #333;
+    box-sizing: border-box;
+    overflow: hidden;
+    touch-action: none;
+  }
+  canvas {
+    width: 100%; height: 100%; display: block;
+    user-select: none;
+  }
+  #completeMsg {
+    display: none;
+    position: absolute;
+    top: 40%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    border: 2px solid gold;
+    border-radius: 12px;
+    text-align: center;
+    z-index: 10;
+    font-size: 1.2em;
+    color: gold;
+    text-shadow: 0 0 5px rgba(255,255,255,0.7);
+  }
+  @media (max-width: 600px) {
+    body {
+      font-size: 0.9em;
+    }
+    h1 {
+      font-size: 1em;
+    }
+    #restartBtn, #pauseBtn, #continueBtn {
+      font-size: 0.6em;
+      padding: 8px 10px;
+    }
+    #timer {
+      font-size: 0.8em;
+    }
+    #completeMsg {
+      font-size: 1em;
+      padding: 15px;
+    }
+  }
+  @media (orientation: landscape) {
+    h1 {
+      display: block;
+    }
+    #puzzleWrapper {
+      aspect-ratio: 4 / 3;
+    }
+    #topBar {
+      width: 95vw;
+      padding: 0;
+    }
+  }
+</style>
 </head>
 <body>
-    <div class="puzzle-container">
-        <h1>Puzzle: Lonja de la Seda</h1>
-        <div id="puzzleWrapper">
-            <canvas id="puzzleCanvas"></canvas>
-            <canvas id="effectCanvas"></canvas>
-        </div>
-        <div class="controls">
-            <button id="restartBtn">🔄 Reiniciar</button>
-            <button id="pauseBtn">⏸️ Pausar</button>
-        </div>
-        <div id="timerDisplay">Tiempo: 00:00</div>
-        <div id="completeMessage">¡Puzzle Completado! 🎉</div>
-    </div>
+<h1>Puzzle: Plaza de Toros y Estación del Norte</h1>
+<div id="topBar">
+  <div id="leftControls">
+    <button id="restartBtn">🔄 Reiniciar</button>
+    <button id="pauseBtn">⏸️ Pausar</button>
+    <span id="timer">Tiempo: 03:00</span>
+  </div>
+  <button id="continueBtn">Continuar</button>
+</div>
+<div id="puzzleWrapper">
+  <canvas id="puzzleCanvas"></canvas>
+  <div id="completeMsg">
+    <strong id="messageText"></strong><br />
+  </div>
+</div>
 
-   <script>
-    const puzzleCanvas = document.getElementById('puzzleCanvas');
-    const ctx = puzzleCanvas.getContext('2d');
-    const effectCanvas = document.getElementById('effectCanvas');
-    const effectCtx = effectCanvas.getContext('2d');
-    
-    const image = new Image();
-    // *** CAMBIO 1: Ruta de la imagen con la barra inicial '/' ***
-    const imageSrc = "imagenes_puzzles/P26_lonja.jpg"; 
+<script>
+const puzzleCanvas = document.getElementById("puzzleCanvas");
+const ctx = puzzleCanvas.getContext("2d");
+const imageSrc = "imagenes_puzzles/P18_puzzle_plaza_de_Toros_y_estacion_norte.jpg"; // ¡Ruta de imagen actualizada!
+const rows = 3, cols = 4;
+let pieces = [], draggingPiece = null;
+let offsetX = 0, offsetY = 0, placedCount = 0;
+let img = new Image();
+let animatingPiece = null, animFrame = 0, animDirection = 1, animScale = 1;
+const completeMsg = document.getElementById("completeMsg");
+const messageText = document.getElementById("messageText");
+const continueBtn = document.getElementById("continueBtn");
+const restartBtn = document.getElementById("restartBtn");
+const pauseBtn = document.getElementById("pauseBtn");
+const timerDisplay = document.getElementById("timer");
+const puzzleWrapper = document.getElementById("puzzleWrapper");
 
-    // Variables globales que definen el estado del puzzle y sus elementos
-    const restartBtn = document.getElementById('restartBtn');
-    const pauseBtn = document.getElementById('pauseBtn');
-    const completeMsg = document.getElementById('completeMessage');
-    const puzzleWrapper = document.getElementById('puzzleWrapper');
-    const timerDisplay = document.getElementById('timerDisplay');
-    let puzzlePieces = [];
-    let cols = 4; // Número de columnas
-    let rows = 3; // Número de filas
-    let pieceWidth, pieceHeight;
-    let currentPiece = null;
-    let offsetX, offsetY;
-    let startTime, timerInterval;
-    let paused = false;
-    let puzzleEnded = false; 
+const placeSound = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg");
+const failSound = new Audio("https://actions.google.com/sounds/v1/cartoon/concussive_hit_guitar_boing.ogg");
+const successSound = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
+placeSound.volume = 0.3; failSound.volume = 0.4; successSound.volume = 0.5;
 
-    // Esta función se ejecuta cuando la imagen ha cargado completamente
-    image.onload = () => {
-        // Redimensiona los canvases ANTES de llamar a init()
-        resizeCanvas(); 
-        // Llama a init() SOLAMENTE cuando la imagen ha cargado y el canvas tiene su tamaño final
-        init(); 
-    };
-    image.onerror = () => {
-        console.error("Error al cargar la imagen:", imageSrc);
-        alert("No se pudo cargar la imagen del puzzle. Intenta recargar la página.");
-    };
-    // *** CAMBIO 2: Inicia la carga de la imagen DESPUÉS de definir 'onload' y 'onerror' ***
-    image.src = imageSrc;
+let paused = false, timeLeft = 180, timerInterval;
 
-    function resizeCanvas() {
-        const wrapperRect = puzzleWrapper.getBoundingClientRect();
-        
-        // Ajusta las dimensiones de ambos canvases al tamaño del wrapper
-        puzzleCanvas.width = wrapperRect.width;
-        puzzleCanvas.height = wrapperRect.height;
-        effectCanvas.width = wrapperRect.width;
-        effectCanvas.height = wrapperRect.height;
+let puzzleEnded = false;
 
-        // Si las piezas ya han sido creadas (es decir, init ya se ha ejecutado antes),
-        // recalcula su tamaño y redibuja. Esto es útil para el redimensionamiento de la ventana.
-        if (puzzlePieces.length > 0) {
-            pieceWidth = puzzleCanvas.width / cols;
-            pieceHeight = puzzleCanvas.height / rows;
-            drawPuzzle(); 
-        }
-    }
+const effectCanvas = document.createElement("canvas");
+const effectCtx = effectCanvas.getContext("2d");
+effectCanvas.style.position = "absolute";
+effectCanvas.style.top = "0";
+effectCanvas.style.left = "0";
+effectCanvas.style.pointerEvents = "none";
+effectCanvas.style.width = "100%";
+effectCanvas.style.height = "100%";
+puzzleWrapper.appendChild(effectCanvas);
 
-    function init() {
-        puzzleEnded = false;
-        completeMsg.style.display = 'none';
-        puzzleWrapper.style.borderColor = '#333';
-        paused = false;
-        pauseBtn.textContent = '⏸️ Pausar';
-        timerDisplay.textContent = 'Tiempo: 00:00';
-        clearInterval(timerInterval); // Limpia cualquier temporizador previo
+img.onload = () => { init(); };
+img.onerror = () => {
+  console.error("Error al cargar la imagen:", imageSrc);
+  alert("No se pudo cargar la imagen del puzzle. Revisa la ruta.");
+};
+img.src = imageSrc;
 
-        // *** CAMBIO 3: Recalcula pieceWidth y pieceHeight aquí. ***
-        // Esto es crucial porque init() se llama *después* de que resizeCanvas() haya configurado
-        // el tamaño del canvas en el 'image.onload'.
-        pieceWidth = puzzleCanvas.width / cols;
-        pieceHeight = puzzleCanvas.height / rows;
+window.addEventListener("resize", resizePieces);
+window.addEventListener("orientationchange", () => setTimeout(resizePieces, 300));
 
-        createPieces(); // Crea las piezas con los tamaños correctos
-        shufflePieces(); // Mezcla las piezas
-        drawPuzzle(); // Dibuja el puzzle mezclado
-        
-        startTime = Date.now();
-        timerInterval = setInterval(updateTimer, 1000); // Inicia el temporizador
-    }
+function resizePieces() {
+  const w = puzzleWrapper.clientWidth;
+  const h = puzzleWrapper.clientHeight;
+  puzzleCanvas.width = w;
+  puzzleCanvas.height = h;
+  effectCanvas.width = w;
+  effectCanvas.height = h;
+  const pw = w / cols;
+  const ph = h / rows;
 
-    function createPieces() {
-        puzzlePieces = [];
-        for (let r = 0; r < rows; r++) {
-            for (let c = 0; c < cols; c++) {
-                puzzlePieces.push({
-                    x: c * pieceWidth, // Posición inicial de la pieza (se mezclará después)
-                    y: r * pieceHeight,
-                    originalX: c * pieceWidth, // Posición correcta en el puzzle resuelto
-                    originalY: r * pieceHeight,
-                    width: pieceWidth,
-                    height: pieceHeight,
-                    row: r,
-                    col: c,
-                    originalRow: r,
-                    originalCol: c,
-                });
-            }
-        }
-    }
+  pieces.forEach(p => {
+    const colIndex = Math.round(p.correctX / p.w);
+    const rowIndex = Math.round(p.correctY / p.h);
+    p.w = pw;
+    p.h = ph;
+    p.correctX = colIndex * pw;
+    p.correctY = rowIndex * ph;
 
-    function shufflePieces() {
-        // Algoritmo de mezcla de Fisher-Yates
-        for (let i = puzzlePieces.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            // Intercambia posiciones (x,y) de las piezas
-            [puzzlePieces[i].x, puzzlePieces[j].x] = [puzzlePieces[j].x, puzzlePieces[i].x];
-            [puzzlePieces[i].y, puzzlePieces[j].y] = [puzzlePieces[j].y, puzzlePieces[i].y];
-        }
-    }
+    if (p.placed) {
+      p.x = p.correctX;
+      p.y = p.correctY;
+    } else {
+      p.x = Math.min(Math.max(p.x * (w / puzzleCanvas.width), 0), w - pw);
+      p.y = Math.min(Math.max(p.y * (h / puzzleCanvas.height), 0), h - ph);
+    }
+  });
+  draw();
+}
 
-    function drawPuzzle() {
-        // Limpia ambos canvases antes de redibujar
-        ctx.clearRect(0, 0, puzzleCanvas.width, puzzleCanvas.height);
-        effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+function init() {
+  puzzleEnded = false;
+  paused = false;
+  pauseBtn.textContent = '⏸️ Pausar';
+  completeMsg.style.display = "none";
+  continueBtn.style.display = "none";
+  puzzleWrapper.style.borderColor = "#333";
+  effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
 
-        puzzlePieces.forEach(piece => {
-            ctx.drawImage(
-                image,
-                // Coordenadas y dimensiones de la parte de la imagen a copiar
-                piece.originalX * (image.naturalWidth / puzzleCanvas.width), 
-                piece.originalY * (image.naturalHeight / puzzleCanvas.height), 
-                piece.width * (image.naturalWidth / puzzleCanvas.width), 
-                piece.height * (image.naturalHeight / puzzleCanvas.height), 
-                // Coordenadas y dimensiones donde dibujar la pieza en el canvas
-                piece.x, 
-                piece.y, 
-                piece.width, 
-                piece.height 
-            );
-            // Dibuja el borde de la pieza (según tu instrucción de "igual grosor")
-            ctx.strokeStyle = '#555'; 
-            ctx.lineWidth = 1; // El grosor del borde es constante
-            ctx.strokeRect(piece.x, piece.y, piece.width, piece.height);
-        });
-    }
+  const w = puzzleWrapper.clientWidth, h = puzzleWrapper.clientHeight;
+  puzzleCanvas.width = w; puzzleCanvas.height = h;
+  effectCanvas.width = w; effectCanvas.height = h;
+  const pw = w / cols, ph = h / rows;
 
-    function getPieceAt(x, y) {
-        // Itera al revés para encontrar la pieza superior (si hay solapamiento)
-        for (let i = puzzlePieces.length - 1; i >= 0; i--) {
-            const piece = puzzlePieces[i];
-            if (x > piece.x && x < piece.x + piece.width &&
-                y > piece.y && y < piece.y + piece.height) {
-                return piece;
-            }
-        }
-        return null;
-    }
+  pieces = []; placedCount = 0;
+  
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      pieces.push({
+        sx: c * img.naturalWidth / cols, sy: r * img.naturalHeight / rows,
+        sw: img.naturalWidth / cols, sh: img.naturalHeight / rows,
+        x: Math.random() * (w - pw), y: Math.random() * (h - ph),
+        w: pw, h: ph, correctX: c * pw, correctY: r * ph,
+        placed: false, scale: 1
+      });
+    }
+  }
 
-    function swapPieces(p1, p2) {
-        // Intercambia las coordenadas de posición de las dos piezas
-        [p1.x, p2.x] = [p2.x, p1.x];
-        [p1.y, p2.y] = [p2.y, p1.y];
-        drawPuzzle(); // Redibuja el puzzle después del intercambio
-        if (checkWin()) {
-            endPuzzle(); // Si se ha ganado, finaliza el puzzle
-        }
-    }
+  timeLeft = 180;
+  updateTimerDisplay();
+  startTimer();
+  draw();
+}
 
-    function checkWin() {
-        // Comprueba si todas las piezas están en su posición original
-        for (let i = 0; i < puzzlePieces.length; i++) {
-            const piece = puzzlePieces[i];
-            if (piece.x !== piece.originalX || piece.y !== piece.originalY) {
-                return false; // Si alguna pieza no está en su lugar, no se ha ganado
-            }
-        }
-        return true; // Todas las piezas están en su lugar
-    }
+function draw() {
+  ctx.clearRect(0, 0, puzzleCanvas.width, puzzleCanvas.height);
+  
+  for (const p of pieces.filter(p => p.placed)) {
+    drawPiece(p);
+    ctx.strokeStyle = '#555';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(p.x, p.y, p.w, p.h);
+  }
+  for (const p of pieces.filter(p => !p.placed)) {
+    drawPiece(p);
+    ctx.strokeStyle = '#555';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(p.x, p.y, p.w, p.h);
+  }
 
-    function endPuzzle() {
-        puzzleEnded = true;
-        clearInterval(timerInterval); // Detiene el temporizador
-        completeMsg.style.display = 'block'; // Muestra el mensaje de completado
-        puzzleWrapper.style.borderColor = 'gold'; // Cambia el borde a dorado
-        // *** Esta línea ya estaba, ¡genial! Asegura la comunicación con la página padre ***
-        window.parent.postMessage('puzzle-completed', '*');
-    }
+  if (animatingPiece) {
+    animatingPiece.scale = animScale;
+    animFrame++;
+    animScale += 0.05 * animDirection;
+    if (animFrame >= 10) animDirection = -1;
+    if (animFrame >= 20) {
+      animatingPiece.scale = 1;
+      animatingPiece = null;
+      animFrame = 0; animDirection = 1; animScale = 1;
+    }
+  }
+  
+  if (!puzzleEnded) {
+    requestAnimationFrame(draw);
+  }
+}
 
-    function updateTimer() {
-        if (paused || puzzleEnded) return; // Si está pausado o terminado, no actualiza
-        const currentTime = Date.now();
-        const elapsedTime = Math.floor((currentTime - startTime) / 1000);
-        const minutes = Math.floor(elapsedTime / 60);
-        const seconds = elapsedTime % 60;
-        timerDisplay.textContent = `Tiempo: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
+function drawPiece(piece) {
+  ctx.save();
+  ctx.translate(piece.x + piece.w / 2, piece.y + piece.h / 2);
+  ctx.scale(piece.scale, piece.scale);
+  ctx.translate(-piece.w / 2, -piece.h / 2);
+  ctx.drawImage(img, piece.sx, piece.sy, piece.sw, piece.sh, 0, 0, piece.w, piece.h);
+  ctx.restore();
+}
 
-    // Funciones de manejo de eventos para arrastrar y soltar con ratón
-    function handleMouseDown(e) {
-        if (paused || puzzleEnded) return;
-        const rect = puzzleCanvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        currentPiece = getPieceAt(x, y); // Obtiene la pieza en la posición del clic
-        if (currentPiece) {
-            offsetX = x - currentPiece.x;
-            offsetY = y - currentPiece.y;
-            // Mueve la pieza actual al final del array para que se dibuje encima
-            puzzlePieces = puzzlePieces.filter(p => p !== currentPiece);
-            puzzlePieces.push(currentPiece);
-            drawPuzzle(); // Redibuja con la pieza seleccionada encima
-            effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
-        }
-    }
+function onPointerDown(e) {
+  if (puzzleEnded || paused) return;
+  const rect = puzzleCanvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  for (let i = pieces.length - 1; i >= 0; i--) {
+    const p = pieces[i];
+    if (!p.placed && x >= p.x && x <= p.x + p.w && y >= p.y && y <= p.y + p.h) {
+      draggingPiece = p;
+      offsetX = x - p.x;
+      offsetY = y - p.y;
+      pieces.splice(i, 1);
+      pieces.push(draggingPiece);
+      break;
+    }
+  }
+}
 
-    function handleMouseMove(e) {
-        if (paused || puzzleEnded || !currentPiece) return;
-        const rect = puzzleCanvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+function onPointerMove(e) {
+  if (!draggingPiece || puzzleEnded || paused) return;
+  const rect = puzzleCanvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  draggingPiece.x = Math.min(Math.max(x - offsetX, 0), puzzleCanvas.width - draggingPiece.w);
+  draggingPiece.y = Math.min(Math.max(y - offsetY, 0), puzzleCanvas.height - draggingPiece.h);
+  
+  effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+  const targetPiece = getPieceAt(x, y);
+  if (targetPiece && targetPiece !== draggingPiece) {
+    effectCtx.strokeStyle = 'rgba(0, 255, 0, 0.7)';
+    effectCtx.lineWidth = 3;
+    effectCtx.strokeRect(targetPiece.x, targetPiece.y, targetPiece.w, targetPiece.h);
+  }
+}
 
-        currentPiece.x = x - offsetX; // Actualiza la posición de la pieza arrastrada
-        currentPiece.y = y - offsetY;
-        drawPuzzle(); // Redibuja el puzzle con la pieza en su nueva posición
+function onPointerUp(e) {
+  if (!draggingPiece || puzzleEnded || paused) return;
+  effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
 
-        effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
-        const targetPiece = getPieceAt(x, y); // Resalta la pieza sobre la que se arrastra
-        if (targetPiece && targetPiece !== currentPiece) {
-            effectCtx.strokeStyle = 'rgba(0, 255, 0, 0.7)';
-            effectCtx.lineWidth = 3;
-            effectCtx.strokeRect(targetPiece.x, targetPiece.y, targetPiece.width, targetPiece.height);
-        }
-    }
+  if (Math.abs(draggingPiece.x - draggingPiece.correctX) < draggingPiece.w / 4 &&
+      Math.abs(draggingPiece.y - draggingPiece.correctY) < draggingPiece.h / 4) {
+    draggingPiece.x = draggingPiece.correctX;
+    draggingPiece.y = draggingPiece.correctY;
+    if (!draggingPiece.placed) {
+      draggingPiece.placed = true;
+      placedCount++;
+      placeSound.play();
+      animatingPiece = draggingPiece;
+      animFrame = 0;
+      animDirection = 1;
+      animScale = 1;
+    }
+  } else {
+    failSound.play();
+  }
+  draggingPiece = null;
+  
+  if (placedCount === pieces.length) {
+    endPuzzle(true);
+  }
+}
 
-    function handleMouseUp(e) {
-        if (paused || puzzleEnded || !currentPiece) return;
-        effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+function getPieceAt(x, y) {
+  for (let i = pieces.length - 1; i >= 0; i--) {
+    const p = pieces[i];
+    if (!p.placed && x >= p.x && x <= p.x + p.w && y >= p.y && y <= p.y + p.h) {
+      return p;
+    }
+  }
+  return null;
+}
 
-        const rect = puzzleCanvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if (!paused && !puzzleEnded) {
+      timeLeft--;
+      updateTimerDisplay();
+      if (timeLeft <= 0) {
+        endPuzzle(false);
+      }
+    }
+  }, 1000);
+}
 
-        const targetPiece = getPieceAt(mouseX, mouseY);
+function updateTimerDisplay() {
+  const m = Math.floor(timeLeft / 60);
+  const s = timeLeft % 60;
+  timerDisplay.textContent = `Tiempo: ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+}
 
-        if (targetPiece && targetPiece !== currentPiece) {
-            swapPieces(currentPiece, targetPiece); // Si se soltó sobre otra pieza, intercámbialas
-        } 
-        currentPiece = null; // Reinicia la pieza arrastrada
-        drawPuzzle();
-    }
+function endPuzzle(success) {
+  puzzleEnded = true;
+  clearInterval(timerInterval);
+  continueBtn.style.display = "inline-block";
+  completeMsg.style.display = "block";
 
-    // Funciones de manejo de eventos para arrastrar y soltar con táctil
-    function handleTouchStart(e) {
-        e.preventDefault(); // Previene el scroll por defecto
-        const touch = e.touches[0];
-        handleMouseDown({ clientX: touch.clientX, clientY: touch.clientY });
-    }
+  if (success) {
+    successSound.play();
+    messageText.textContent = "🎉 ¡Bravo! ¡Puzzle Completado!";
+    puzzleWrapper.style.borderColor = "gold";
+    runFireworks();
+  } else {
+    messageText.textContent = "⏰ ¡Tiempo agotado! Inténtalo de nuevo.";
+    puzzleWrapper.style.borderColor = "red";
+    runConfetti();
+  }
 
-    function handleTouchMove(e) {
-        e.preventDefault();
-        const touch = e.touches[0];
-        handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
-    }
+  window.parent.postMessage(success ? 'puzzle-completed' : 'puzzle-timeout', '*');
+}
 
-    function handleTouchEnd(e) {
-        e.preventDefault();
-        handleMouseUp({}); // Simula un 'mouseup' al levantar el dedo
-    }
+function runFireworks() {
+  let duration = 5000;
+  let startTime = null;
+  const particles = [];
+  const colors = ["#ff2e2e","#ff7f50","#ffcc00","#3cff5f","#1e90ff","#9b30ff"];
 
-    // Asignación de eventos de ratón
-    puzzleCanvas.addEventListener('mousedown', handleMouseDown);
-    puzzleCanvas.addEventListener('mousemove', handleMouseMove);
-    puzzleCanvas.addEventListener('mouseup', handleMouseUp);
-    puzzleCanvas.addEventListener('mouseleave', handleMouseUp); // Para cuando el ratón sale del canvas
+  effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
 
-    // Asignación de eventos táctiles
-    puzzleCanvas.addEventListener('touchstart', handleTouchStart);
-    puzzleCanvas.addEventListener('touchmove', handleTouchMove);
-    puzzleCanvas.addEventListener('touchend', handleTouchEnd);
-    puzzleCanvas.addEventListener('touchcancel', handleTouchEnd); // Si la interacción táctil se cancela
+  function createParticle(x, y) {
+    return {
+      x, y,
+      vx: (Math.random() - 0.5) * 6,
+      vy: (Math.random() - 0.5) * 6,
+      life: 100,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      size: Math.random() * 3 + 2
+    };
+  }
 
-    // Eventos de botones
-    restartBtn.addEventListener('click', init); // Reinicia el puzzle
-    pauseBtn.addEventListener('click', () => {
-        paused = !paused; // Cambia el estado de pausa
-        if (paused) {
-            pauseBtn.textContent = '▶️ Reanudar'; // Cambia el texto del botón
-            clearInterval(timerInterval); // Detiene el temporizador
-        } else {
-            pauseBtn.textContent = '⏸️ Pausar'; // Cambia el texto del botón
-            // Reajusta el tiempo para que el temporizador no salte al reanudar
-            const currentTime = Date.now();
-            const currentElapsedTime = Math.floor((currentTime - startTime) / 1000);
-            startTime = Date.now() - currentElapsedTime * 1000;
-            timerInterval = setInterval(updateTimer, 1000); // Reanuda el temporizador
-        }
-    });
+  function loop(timestamp) {
+    if (!startTime) startTime = timestamp;
+    let elapsed = timestamp - startTime;
+    effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
 
-    // Escucha el evento de redimensionamiento de la ventana para ajustar el canvas
-    window.addEventListener('resize', resizeCanvas);
-    // *** CAMBIO 4: Llama a resizeCanvas() inicialmente aquí, fuera del 'image.onload'. ***
-    // Esto asegura que los canvases tengan un tamaño válido ANTES de que la imagen cargue,
-    // previniendo que pieceWidth y pieceHeight se calculen como 0 al inicio.
-    // La función init() sigue siendo llamada en image.onload para asegurar que
-    // el puzzle se crea solo cuando la imagen está lista.
-    resizeCanvas(); 
+    if (elapsed < duration) {
+      if (particles.length < 100) {
+        let x = Math.random() * effectCanvas.width;
+        let y = Math.random() * effectCanvas.height / 2;
+        for(let i=0; i<5; i++) {
+          particles.push(createParticle(x, y));
+        }
+      }
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.1;
+        p.life--;
+        if (p.life <= 0) particles.splice(i, 1);
+        else {
+          effectCtx.beginPath();
+          effectCtx.fillStyle = p.color;
+          effectCtx.shadowColor = p.color;
+          effectCtx.shadowBlur = 10;
+          effectCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          effectCtx.fill();
+          effectCtx.closePath();
+        }
+      }
+      requestAnimationFrame(loop);
+    } else {
+      effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+    }
+  }
+  requestAnimationFrame(loop);
+}
+
+function runConfetti() {
+  let duration = 5000;
+  let startTime = null;
+  const confettiPieces = [];
+  const colors = ["#ff0","#f0f","#0ff","#0f0","#00f","#f00"];
+
+  effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+
+  function createConfetti() {
+    return {
+      x: Math.random() * effectCanvas.width,
+      y: Math.random() * -20,
+      size: Math.random() * 8 + 8,
+      speedY: Math.random() * 3 + 2,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      tilt: Math.random() * 10 - 5,
+      tiltSpeed: Math.random() * 0.1 + 0.05
+    };
+  }
+
+  for(let i = 0; i < 150; i++) {
+    confettiPieces.push(createConfetti());
+  }
+
+  function loop(timestamp) {
+    if (!startTime) startTime = timestamp;
+    let elapsed = timestamp - startTime;
+    effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+
+    if (elapsed < duration) {
+      confettiPieces.forEach(p => {
+        p.y += p.speedY;
+        p.tilt += p.tiltSpeed;
+        if (p.y > effectCanvas.height) {
+          p.x = Math.random() * effectCanvas.width;
+          p.y = Math.random() * -20;
+        }
+        effectCtx.save();
+        effectCtx.translate(p.x, p.y);
+        effectCtx.rotate(p.tilt);
+        effectCtx.fillStyle = p.color;
+        effectCtx.fillRect(-p.size/2, -p.size/4, p.size, p.size/2);
+        effectCtx.restore();
+      });
+      requestAnimationFrame(loop);
+    } else {
+      effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+    }
+  }
+  requestAnimationFrame(loop);
+}
+
+
+restartBtn.addEventListener("click", () => {
+  init();
+});
+pauseBtn.addEventListener("click", () => {
+  paused = !paused;
+  pauseBtn.textContent = paused ? "▶️ Reanudar" : "⏸️ Pausar";
+});
+
+continueBtn.addEventListener("click", () => {
+  completeMsg.style.display = "none";
+  continueBtn.style.display = "none";
+});
+
+
+puzzleCanvas.addEventListener("pointerdown", onPointerDown);
+puzzleCanvas.addEventListener("pointermove", onPointerMove);
+puzzleCanvas.addEventListener("pointerup", onPointerUp);
+puzzleCanvas.addEventListener("pointercancel", onPointerUp);
+puzzleCanvas.addEventListener("pointerout", onPointerUp);
+puzzleCanvas.addEventListener("pointerleave", onPointerUp);
+
 </script>
 </body>
 </html>
