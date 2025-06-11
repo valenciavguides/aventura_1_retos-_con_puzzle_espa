@@ -162,6 +162,18 @@
 <div id="fuegos"></div>
 
 <script>
+window.addEventListener('message', function(event) {
+      if (event.data === 'puzzle-completed') {
+        console.log('Puzzle completado. Navegando al siguiente reto...');
+        // Aquí debes poner la URL del siguiente reto
+        window.location.href = 'URL_DEL_SIGUIENTE_RETO.html'; 
+    } else if (event.data === 'puzzle-timeout') {
+        console.log('Tiempo del puzzle agotado. Podrías redirigir a un mensaje de intento fallido o al mismo reto.');
+        // Aquí puedes redirigir a una página de "inténtalo de nuevo" o al mismo reto
+        // window.location.href = 'URL_PARA_REINTENTAR_O_MENSAJE_FALLO.html';
+        window.location.href = 'URL_DEL_MISMO_RETO_PARA_REINTENTAR.html'; // Por ejemplo, recargar el mismo puzzle
+    }
+});
 /* --- Datos retos --- */
 const retos = [
  {
