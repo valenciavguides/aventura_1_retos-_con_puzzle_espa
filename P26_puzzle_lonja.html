@@ -123,258 +123,279 @@
     </div>
 
     <script>
-        const puzzleCanvas = document.getElementById('puzzleCanvas');
-        const ctx = puzzleCanvas.getContext('2d');
-        const effectCanvas = document.getElementById('effectCanvas');
-        const effectCtx = effectCanvas.getContext('2d');
+    const puzzleCanvas = document.getElementById('puzzleCanvas');
+    const ctx = puzzleCanvas.getContext('2d');
+    const effectCanvas = document.getElementById('effectCanvas');
+    const effectCtx = effectCanvas.getContext('2d');
+    
+    const image = new Image();
+    const imageSrc = "imagenes_puzzles/P26_lonja.jpg"; // <--- CAMBIA ESTO PARA CADA PUZZLE
+
+    // Asegura que la imagen se cargue completamente antes de inicializar
+    image.onload = () => {
+        // Redimensiona los canvases antes de iniciar el puzzle
+        resizeCanvas(); 
+        init(); 
+    };
+    image.onerror = () => {
+        console.error("Error al cargar la imagen:", imageSrc);
+        // Puedes mostrar un mensaje de error al usuario aquí
+        alert("No se pudo cargar la imagen del puzzle. Intenta recargar la página.");
+    };
+    image.src = imageSrc; // ¡Inicia la carga de la imagen!
+
+    const restartBtn = document.getElementById('restartBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const completeMsg = document.getElementById('completeMessage');
+    const puzzleWrapper = document.getElementById('puzzleWrapper');
+    const timerDisplay = document.getElementById('timerDisplay');
+    let puzzlePieces = [];
+    let cols = 4; // Número de columnas
+    let rows = 3; // Número de filas
+    let pieceWidth, pieceHeight;
+    let currentPiece = null;
+    let offsetX, offsetY;
+    let startTime, timerInterval;
+    let paused = false;
+    let puzzleEnded = false; 
+
+    function resizeCanvas() {
+        // Asegúrate de que el wrapper tenga dimensiones antes de obtenerlas
+        const wrapperRect = puzzleWrapper.getBoundingClientRect();
         
-        const image = new Image();
-        // RUTA DE IMAGEN ESPECÍFICA PARA P26 (¡VERIFICADA!)
-        const imageSrc = "imagenes_puzzles/P26_lonja.jpg"; 
-        
-        // *** LÍNEAS CLAVE CORREGIDAS PARA LA CARGA DE LA IMAGEN ***
-        image.onload = () => {
-            init(); 
-        };
-        image.src = imageSrc; // ¡Esta línea INICIA LA CARGA DE LA IMAGEN!
-        // *** FIN DE LAS LÍNEAS CLAVE CORREGIDAS ***
+        // Ajusta las dimensiones del canvas a las del wrapper
+        puzzleCanvas.width = wrapperRect.width;
+        puzzleCanvas.height = wrapperRect.height;
+        effectCanvas.width = wrapperRect.width;
+        effectCanvas.height = wrapperRect.height;
 
-        const restartBtn = document.getElementById('restartBtn');
-        const pauseBtn = document.getElementById('pauseBtn');
-        const completeMsg = document.getElementById('completeMessage');
-        const puzzleWrapper = document.getElementById('puzzleWrapper');
-        const timerDisplay = document.getElementById('timerDisplay');
-        let puzzlePieces = [];
-        let cols = 4;
-        let rows = 3;
-        let pieceWidth, pieceHeight;
-        let currentPiece = null;
-        let offsetX, offsetY;
-        let startTime, timerInterval;
-        let paused = false;
-        let puzzleEnded = false; 
-
-        function resizeCanvas() {
-            const wrapperRect = puzzleWrapper.getBoundingClientRect();
-            puzzleCanvas.width = wrapperRect.width;
-            puzzleCanvas.height = wrapperRect.height;
-            effectCanvas.width = wrapperRect.width;
-            effectCanvas.height = wrapperRect.height;
-
-            if (image.complete && image.naturalWidth > 0) {
-                drawPuzzle(); 
-            }
-        }
-
-        function init() {
-            puzzleEnded = false;
-            completeMsg.style.display = 'none';
-            puzzleWrapper.style.borderColor = '#333';
-            paused = false;
-            pauseBtn.textContent = '⏸️ Pausar';
-            timerDisplay.textContent = 'Tiempo: 00:00';
-            clearInterval(timerInterval);
-
+        // Recalcula el tamaño de las piezas y redibuja si la imagen ya cargó
+        if (image.complete && image.naturalWidth > 0) {
             pieceWidth = puzzleCanvas.width / cols;
             pieceHeight = puzzleCanvas.height / rows;
-            createPieces();
-            shufflePieces();
+            drawPuzzle(); 
+        }
+    }
+
+    function init() {
+        puzzleEnded = false;
+        completeMsg.style.display = 'none';
+        puzzleWrapper.style.borderColor = '#333';
+        paused = false;
+        pauseBtn.textContent = '⏸️ Pausar';
+        timerDisplay.textContent = 'Tiempo: 00:00';
+        clearInterval(timerInterval);
+
+        // Asegúrate de que pieceWidth y pieceHeight se calculen aquí después del redimensionado
+        // Esto es crucial para que las piezas tengan el tamaño correcto
+        pieceWidth = puzzleCanvas.width / cols;
+        pieceHeight = puzzleCanvas.height / rows;
+
+        createPieces();
+        shufflePieces();
+        drawPuzzle();
+        startTime = Date.now();
+        timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    function createPieces() {
+        puzzlePieces = [];
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                puzzlePieces.push({
+                    x: c * pieceWidth,
+                    y: r * pieceHeight,
+                    originalX: c * pieceWidth,
+                    originalY: r * pieceHeight,
+                    width: pieceWidth,
+                    height: pieceHeight,
+                    row: r,
+                    col: c,
+                    originalRow: r,
+                    originalCol: c,
+                });
+            }
+        }
+    }
+
+    function shufflePieces() {
+        for (let i = puzzlePieces.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [puzzlePieces[i], puzzlePieces[j]] = [puzzlePieces[j], puzzlePieces[i]];
+        }
+    }
+
+    function drawPuzzle() {
+        ctx.clearRect(0, 0, puzzleCanvas.width, puzzleCanvas.height);
+        effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+
+        puzzlePieces.forEach(piece => {
+            ctx.drawImage(
+                image,
+                // Coordenadas de origen en la imagen (para la parte de la imagen)
+                piece.originalX * (image.naturalWidth / puzzleCanvas.width), 
+                piece.originalY * (image.naturalHeight / puzzleCanvas.height), 
+                piece.width * (image.naturalWidth / puzzleCanvas.width), 
+                piece.height * (image.naturalHeight / puzzleCanvas.height), 
+                // Coordenadas de destino en el canvas (donde se dibujará la pieza)
+                piece.x, 
+                piece.y, 
+                piece.width, 
+                piece.height 
+            );
+            ctx.strokeStyle = '#555'; 
+            ctx.lineWidth = 1; 
+            ctx.strokeRect(piece.x, piece.y, piece.width, piece.height);
+        });
+    }
+
+    function getPieceAt(x, y) {
+        for (let i = puzzlePieces.length - 1; i >= 0; i--) {
+            const piece = puzzlePieces[i];
+            if (x > piece.x && x < piece.x + piece.width &&
+                y > piece.y && y < piece.y + piece.height) {
+                return piece;
+            }
+        }
+        return null;
+    }
+
+    function swapPieces(p1, p2) {
+        [p1.x, p2.x] = [p2.x, p1.x];
+        [p1.y, p2.y] = [p2.y, p1.y];
+        drawPuzzle();
+        if (checkWin()) {
+            endPuzzle();
+        }
+    }
+
+    function checkWin() {
+        for (let i = 0; i < puzzlePieces.length; i++) {
+            const piece = puzzlePieces[i];
+            if (piece.x !== piece.originalX || piece.y !== piece.originalY) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function endPuzzle() {
+        puzzleEnded = true;
+        clearInterval(timerInterval);
+        completeMsg.style.display = 'block';
+        puzzleWrapper.style.borderColor = 'gold'; 
+    }
+
+    function updateTimer() {
+        if (paused || puzzleEnded) return;
+        const currentTime = Date.now();
+        const elapsedTime = Math.floor((currentTime - startTime) / 1000);
+        const minutes = Math.floor(elapsedTime / 60);
+        const seconds = elapsedTime % 60;
+        timerDisplay.textContent = `Tiempo: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function handleMouseDown(e) {
+        if (paused || puzzleEnded) return;
+        const rect = puzzleCanvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        currentPiece = getPieceAt(x, y);
+        if (currentPiece) {
+            offsetX = x - currentPiece.x;
+            offsetY = y - currentPiece.y;
+            puzzlePieces = puzzlePieces.filter(p => p !== currentPiece);
+            puzzlePieces.push(currentPiece);
             drawPuzzle();
-            startTime = Date.now();
+            effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+        }
+    }
+
+    function handleMouseMove(e) {
+        if (paused || puzzleEnded || !currentPiece) return;
+        const rect = puzzleCanvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        currentPiece.x = x - offsetX;
+        currentPiece.y = y - offsetY;
+        drawPuzzle();
+
+        effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+        const targetPiece = getPieceAt(x, y);
+        if (targetPiece && targetPiece !== currentPiece) {
+            effectCtx.strokeStyle = 'rgba(0, 255, 0, 0.7)';
+            effectCtx.lineWidth = 3;
+            effectCtx.strokeRect(targetPiece.x, targetPiece.y, targetPiece.width, targetPiece.height);
+        }
+    }
+
+    function handleMouseUp(e) {
+        if (paused || puzzleEnded || !currentPiece) return;
+        effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+
+        const rect = puzzleCanvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const targetPiece = getPieceAt(mouseX, mouseY);
+
+        if (targetPiece && targetPiece !== currentPiece) {
+            swapPieces(currentPiece, targetPiece);
+        } 
+        currentPiece = null;
+        drawPuzzle();
+    }
+
+    function handleTouchStart(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        handleMouseDown({ clientX: touch.clientX, clientY: touch.clientY });
+    }
+
+    function handleTouchMove(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
+    }
+
+    function handleTouchEnd(e) {
+        e.preventDefault();
+        handleMouseUp({});
+    }
+
+    puzzleCanvas.addEventListener('mousedown', handleMouseDown);
+    puzzleCanvas.addEventListener('mousemove', handleMouseMove);
+    puzzleCanvas.addEventListener('mouseup', handleMouseUp);
+    puzzleCanvas.addEventListener('mouseleave', handleMouseUp);
+
+    puzzleCanvas.addEventListener('touchstart', handleTouchStart);
+    puzzleCanvas.addEventListener('touchmove', handleTouchMove);
+    puzzleCanvas.addEventListener('touchend', handleTouchEnd);
+    puzzleCanvas.addEventListener('touchcancel', handleTouchEnd);
+
+    restartBtn.addEventListener('click', init);
+    pauseBtn.addEventListener('click', () => {
+        paused = !paused;
+        if (paused) {
+            pauseBtn.textContent = '▶️ Reanudar';
+            clearInterval(timerInterval);
+        } else {
+            pauseBtn.textContent = '⏸️ Pausar';
+            // Para ajustar el tiempo al reanudar
+            const currentTime = Date.now();
+            const currentElapsedTime = Math.floor((currentTime - startTime) / 1000);
+            startTime = Date.now() - currentElapsedTime * 1000;
             timerInterval = setInterval(updateTimer, 1000);
         }
+    });
 
-        function createPieces() {
-            puzzlePieces = [];
-            for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
-                    puzzlePieces.push({
-                        x: c * pieceWidth,
-                        y: r * pieceHeight,
-                        originalX: c * pieceWidth,
-                        originalY: r * pieceHeight,
-                        width: pieceWidth,
-                        height: pieceHeight,
-                        row: r,
-                        col: c,
-                        originalRow: r,
-                        originalCol: c,
-                    });
-                }
-            }
-        }
-
-        function shufflePieces() {
-            for (let i = puzzlePieces.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [puzzlePieces[i], puzzlePieces[j]] = [puzzlePieces[j], puzzlePieces[i]];
-            }
-        }
-
-        function drawPuzzle() {
-            ctx.clearRect(0, 0, puzzleCanvas.width, puzzleCanvas.height);
-            effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
-
-            puzzlePieces.forEach(piece => {
-                ctx.drawImage(
-                    image,
-                    piece.originalX * (image.naturalWidth / puzzleCanvas.width), 
-                    piece.originalY * (image.naturalHeight / puzzleCanvas.height), 
-                    piece.width * (image.naturalWidth / puzzleCanvas.width), 
-                    piece.height * (image.naturalHeight / puzzleCanvas.height), 
-                    piece.x, 
-                    piece.y, 
-                    piece.width, 
-                    piece.height 
-                );
-                ctx.strokeStyle = '#555'; 
-                ctx.lineWidth = 1; 
-                ctx.strokeRect(piece.x, piece.y, piece.width, piece.height);
-            });
-        }
-
-        function getPieceAt(x, y) {
-            for (let i = puzzlePieces.length - 1; i >= 0; i--) {
-                const piece = puzzlePieces[i];
-                if (x > piece.x && x < piece.x + piece.width &&
-                    y > piece.y && y < piece.y + piece.height) {
-                    return piece;
-                }
-            }
-            return null;
-        }
-
-        function swapPieces(p1, p2) {
-            [p1.x, p2.x] = [p2.x, p1.x];
-            [p1.y, p2.y] = [p2.y, p1.y];
-            drawPuzzle();
-            if (checkWin()) {
-                endPuzzle();
-            }
-        }
-
-        function checkWin() {
-            for (let i = 0; i < puzzlePieces.length; i++) {
-                const piece = puzzlePieces[i];
-                if (piece.x !== piece.originalX || piece.y !== piece.originalY) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        function endPuzzle() {
-            puzzleEnded = true;
-            clearInterval(timerInterval);
-            completeMsg.style.display = 'block';
-            puzzleWrapper.style.borderColor = 'gold'; 
-        }
-
-        function updateTimer() {
-            if (paused || puzzleEnded) return;
-            const currentTime = Date.now();
-            const elapsedTime = Math.floor((currentTime - startTime) / 1000);
-            const minutes = Math.floor(elapsedTime / 60);
-            const seconds = elapsedTime % 60;
-            timerDisplay.textContent = `Tiempo: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        }
-
-        function handleMouseDown(e) {
-            if (paused || puzzleEnded) return;
-            const rect = puzzleCanvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            currentPiece = getPieceAt(x, y);
-            if (currentPiece) {
-                offsetX = x - currentPiece.x;
-                offsetY = y - currentPiece.y;
-                puzzlePieces = puzzlePieces.filter(p => p !== currentPiece);
-                puzzlePieces.push(currentPiece);
-                drawPuzzle();
-                effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
-            }
-        }
-
-        function handleMouseMove(e) {
-            if (paused || puzzleEnded || !currentPiece) return;
-            const rect = puzzleCanvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            currentPiece.x = x - offsetX;
-            currentPiece.y = y - offsetY;
-            drawPuzzle();
-
-            effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
-            const targetPiece = getPieceAt(x, y);
-            if (targetPiece && targetPiece !== currentPiece) {
-                effectCtx.strokeStyle = 'rgba(0, 255, 0, 0.7)';
-                effectCtx.lineWidth = 3;
-                effectCtx.strokeRect(targetPiece.x, targetPiece.y, targetPiece.width, targetPiece.height);
-            }
-        }
-
-        function handleMouseUp(e) {
-            if (paused || puzzleEnded || !currentPiece) return;
-            effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
-
-            const rect = puzzleCanvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-
-            const targetPiece = getPieceAt(mouseX, mouseY);
-
-            if (targetPiece && targetPiece !== currentPiece) {
-                swapPieces(currentPiece, targetPiece);
-            } 
-            currentPiece = null;
-            drawPuzzle();
-        }
-
-        function handleTouchStart(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            handleMouseDown({ clientX: touch.clientX, clientY: touch.clientY });
-        }
-
-        function handleTouchMove(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
-        }
-
-        function handleTouchEnd(e) {
-            e.preventDefault();
-            handleMouseUp({});
-        }
-
-        puzzleCanvas.addEventListener('mousedown', handleMouseDown);
-        puzzleCanvas.addEventListener('mousemove', handleMouseMove);
-        puzzleCanvas.addEventListener('mouseup', handleMouseUp);
-        puzzleCanvas.addEventListener('mouseleave', handleMouseUp);
-
-        puzzleCanvas.addEventListener('touchstart', handleTouchStart);
-        puzzleCanvas.addEventListener('touchmove', handleTouchMove);
-        puzzleCanvas.addEventListener('touchend', handleTouchEnd);
-        puzzleCanvas.addEventListener('touchcancel', handleTouchEnd);
-
-        restartBtn.addEventListener('click', init);
-        pauseBtn.addEventListener('click', () => {
-            paused = !paused;
-            if (paused) {
-                pauseBtn.textContent = '▶️ Reanudar';
-                clearInterval(timerInterval);
-            } else {
-                pauseBtn.textContent = '⏸️ Pausar';
-                const currentTime = Date.now();
-                const currentElapsedTime = Math.floor((currentTime - startTime) / 1000);
-                startTime = Date.now() - currentElapsedTime * 1000;
-                timerInterval = setInterval(updateTimer, 1000);
-            }
-        });
-
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas(); 
-    </script>
+    // Escucha el evento de redimensionamiento de la ventana
+    window.addEventListener('resize', resizeCanvas);
+    // Llama a resizeCanvas inicialmente para establecer el tamaño correcto
+    // Esto se ejecutará ANTES de que la imagen cargue, lo cual está bien.
+    // El 'init' se encarga de re-calcular piezas una vez la imagen esté lista.
+    resizeCanvas(); 
+</script>
 </body>
 </html>
