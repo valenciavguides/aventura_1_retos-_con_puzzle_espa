@@ -2,504 +2,671 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Retos Aventura 1</title>
 <style>
-  html, body {
-    margin: 0; padding: 0; height: 100%;
-    background: #f0f0f0;
-    font-family: sans-serif;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: flex-start;
-    /* Eliminar scroll general si aparece de otras causas, aunque el puzzle lo evitará */
-    overflow: hidden;
-  }
-  h1 {
-    font-size: 1.2em;
-    margin: 0; /* Elimina todos los márgenes por defecto */
-    padding: 5px 0; /* Pequeño padding vertical para el texto */
-    text-align: center;
-    width: 99vw; /* Para centrar el texto mejor con un ancho fijo */
-    max-width: 1000px;
-  }
-  #topBar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0; /* Elimina margen inferior */
-    width: 99vw; /* Más ancho para ocupar más pantalla */
-    max-width: 1000px;
-    gap: 10px;
-    flex-wrap: nowrap;
-    padding: 5px 0; /* Un poco de padding vertical */
-  }
-  #leftControls {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-shrink: 1;
-    min-width: 0;
-    flex-grow: 1;
-    justify-content: flex-start;
-  }
-  #restartBtn, #pauseBtn, #continueBtn { /* Estilos comunes para los botones */
-    padding: 6px 12px;
-    background: white;
-    color: black;
-    border: 2px solid black;
-    border-radius: 8px;
-    font-size: 0.9em;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  #timer {
-    font-size: 1em;
-    font-weight: bold;
-    min-width: 60px;
-    text-align: center;
-    white-space: nowrap;
-  }
-  #continueBtn {
-    display: none; /* Oculto por defecto, visible solo al finalizar */
-  }
-  #puzzleWrapper {
-    width: 99vw; /* Ocupa casi todo el ancho */
-    max-width: 1000px; /* Mantiene un límite razonable en pantallas muy grandes */
-    height: calc(100vh - 80px); /* Calculado: Altura máxima para evitar scroll en portrait, considerando h1 y topBar */
-    /* Elimina aspect-ratio para permitir distorsión y maximizar el espacio */
-    background: #ddd;
-    position: relative;
-    border: 5px solid #333;
-    overflow: hidden; /* Asegura que no haya scroll interno */
-    touch-action: none; /* Previene el "pull-to-refresh" y overscroll */
-    flex-grow: 1; /* Permite que el wrapper crezca y ocupe el espacio vertical restante */
-    display: flex; /* Para centrar el canvas si fuera necesario, aunque el canvas ya es 100% */
-    justify-content: center;
-    align-items: center;
-  }
-  canvas {
-    width: 100%; height: 100%; display: block;
-    user-select: none;
-  }
-  #completeMsg {
-    display: none;
-    position: absolute;
-    top: 40%; left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(255,255,255,0.95);
-    padding: 20px;
-    border: 2px solid #333;
-    border-radius: 12px;
-    text-align: center;
-    z-index: 10;
-    font-size: 1.2em;
-  }
-  @media (orientation: landscape) {
-    h1 {
-      display: none; /* Oculta el título en orientación horizontal */
+    body {
+        font-family: "Book Antiqua", Palatino, serif;
+        margin: 1em;
+        background: #fff;
+        color: #222;
+        font-size: 16px; /* Asegura un tamaño base para 'em' */
     }
-    #topBar {
-      margin-bottom: 0; /* Elimina margen inferior */
-      padding: 0; /* Elimina padding vertical */
-      width: 100%; /* Ocupa el ancho completo en landscape */
-      max-width: none; /* No limita el ancho en landscape si es una pantalla grande */
-      justify-content: center; /* Centra los controles en landscape */
+    h2 { /* Este es el título visible en la página */
+        margin-bottom: 0.8em;
     }
-    #puzzleWrapper {
-      width: calc(100vw - 20px); /* Ocupa casi todo el ancho en landscape */
-      height: calc(100vh - 40px); /* Altura máxima en landscape, dejando poco espacio para topBar */
-      max-width: none; /* No limita el ancho en landscape */
-      /* Elimina aspect-ratio para permitir distorsión y maximizar el espacio */
+    h3 {
+        margin-bottom: 0.2em;
     }
-  }
-  /* No es necesario un media query específico para mobile portrait si las reglas generales ya cubren bien */
+    #reto {
+        border: 3px solid #ccc; /* Grosor de borde constante */
+        border-radius: 8px;
+        padding: 1em;
+        margin-bottom: 1em;
+        position: relative;
+        min-height: 220px;
+    }
+    .respuesta {
+        margin: 0.4em 0;
+        font-size: 1.1em;
+        display: flex;
+        align-items: center;
+    }
+    .respuesta input[type="radio"] {
+        margin-right: 0.7em;
+        transform: scale(1.3);
+        cursor: pointer;
+    }
+    .respuesta input[type="checkbox"] {
+        margin-right: 0.7em;
+        transform: scale(1.3);
+        cursor: pointer;
+    }
+    .respuesta input[type="text"] {
+        flex-grow: 1;
+        font-size: 1.1em;
+        padding: 0.3em 0.5em;
+        border-radius: 4px;
+        border: 1px solid #999;
+    }
+    /* Contenedor para los botones para que estén en la misma línea */
+    #button-container {
+        display: flex;
+        flex-wrap: wrap; /* Permite que los botones salten de línea si no hay espacio */
+        gap: 1em; /* Espacio entre los botones */
+        margin-top: 1em;
+        justify-content: center; /* Centra los botones horizontalmente */
+        align-items: center; /* Alinea verticalmente los botones si tienen alturas diferentes */
+    }
+
+    button.btn, button#btnMostrarRespuesta, button#btnNextAfterReto {
+        padding: 0.6em 1.2em;
+        font-size: 1.1em;
+        border: none; /* Se quita el borde de 2px para mantener el estilo del primer código */
+        border-radius: 6px;
+        cursor: pointer;
+        background-color: #0077cc;
+        color: white;
+        user-select: none;
+        transition: background-color 0.3s ease; /* Transición para hover */
+    }
+    button.btn:hover, button#btnNextAfterReto:hover {
+        background-color: #005699; /* Oscurecer al pasar el ratón */
+    }
+    button.btn:disabled {
+        background-color: #999;
+        cursor: not-allowed;
+    }
+    #btnMostrarRespuesta {
+        background-color: #28a745; /* Color del primer código */
+        display: none; /* Por defecto oculto, su visibilidad se controla con JS */
+    }
+    #btnMostrarRespuesta:hover {
+        background-color: #1e7e34; /* Oscurecer al pasar el ratón */
+    }
+    #btnNextAfterReto {
+        background-color: #0077cc; /* Usa el color original del botón para ser coherente */
+        display: none; /* Por defecto oculto, su visibilidad se controla con JS */
+    }
+
+
+    #respuestaCorrectaTexto {
+        margin-top: 1em;
+        font-weight: bold;
+        text-align: center;
+        position: absolute; /* Para que se superponga al iframe si es necesario */
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 1em;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        font-size: 1.5em;
+        color: #222;
+        z-index: 20;
+        display: none; /* Inicialmente oculto */
+    }
+    #fuegos {
+        pointer-events: none;
+        position: absolute;
+        top: 0; left: 0; /* Cubrir toda la ventana */
+        width: 100%;
+        height: 100%;
+        z-index: 10;
+        overflow: hidden;
+        display: none; /* Inicialmente oculto */
+    }
+
+    /* Border colors for correct/incorrect */
+    #reto.correct {
+        border-color: #28a745; /* Verde */
+    }
+    #reto.incorrect {
+        border-color: #c00; /* Rojo */
+    }
+
+    /* Estilos específicos para el iframe del puzzle */
+    #puzzleIframe {
+        width: 100%;
+        height: calc(100vh - 150px); /* Ajusta la altura para que ocupe más espacio en móviles */
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        display: block;
+        margin: 1em auto;
+    }
+
+    /* Media Query para móviles en horizontal: oculta el h2 y ajusta el espacio */
+    @media (max-width: 800px) and (orientation: landscape) {
+        h2 {
+            display: none; /* Oculta el título "Reto Valencia be Guides" */
+        }
+        body {
+            margin: 0.5em; /* Reduce los márgenes del body para ganar espacio */
+        }
+        #reto {
+            min-height: 180px; /* Ajusta la altura mínima del reto */
+            padding: 0.8em; /* Reduce el padding del reto */
+        }
+        button.btn, button#btnMostrarRespuesta, button#btnNextAfterReto {
+            font-size: 1em; /* Reduce el tamaño de fuente de los botones */
+            padding: 0.5em 1em; /* Reduce el padding de los botones */
+        }
+        .respuesta {
+            font-size: 1em; /* Reduce el tamaño de fuente de las opciones */
+        }
+        .respuesta input[type="radio"], .respuesta input[type="checkbox"] {
+            transform: scale(1.1); /* Reduce un poco el tamaño de los radios/checkboxes */
+        }
+        #puzzleIframe {
+            height: calc(100vh - 120px); /* Ajusta la altura del iframe en landscape para dejar espacio */
+        }
+    }
+
+    /* Media Query para pantallas más grandes o portrait */
+    @media (min-width: 801px) or (orientation: portrait) {
+        #puzzleIframe {
+            max-width: 800px; /* Limita el ancho en pantallas grandes */
+            height: 600px; /* Altura fija para pantallas más grandes */
+        }
+    }
 </style>
 </head>
 <body>
 
-<h1>8. Plaza de la Virgen</h1>
-<div id="topBar">
-  <div id="leftControls">
-    <button id="restartBtn">🔄 Reiniciar</button>
-    <button id="pauseBtn">⏸️ Pausa</button>
-    <span id="timer">03:00</span>
-    <button id="continueBtn">Siguiente</button>
-  </div>
+<h2></h2>
+<div id="reto" tabindex="0"></div>
+
+<div id="button-container">
+    <button id="btnMostrarRespuesta">Respuesta Correcta</button>
+    <button id="btnNextAfterReto">Siguiente</button>
 </div>
-<div id="puzzleWrapper">
-  <canvas id="puzzleCanvas"></canvas>
-  <div id="completeMsg">
-    <strong id="messageText"></strong><br />
-  </div>
-</div>
+<div id="respuestaCorrectaTexto"></div>
+
+<div id="fuegos"></div>
+
 <script>
-const canvas = document.getElementById("puzzleCanvas");
-const ctx = canvas.getContext("2d");
-// URL de la imagen para el puzzle de la Plaza de la Virgen
-const imageSrc = "imagenes_puzzles/P8_plaza_de_la_virgen.jpg";
-const rows = 3, cols = 4;
-let pieces = [], draggingPiece = null;
-let offsetX = 0, offsetY = 0, placedCount = 0;
-let img = new Image();
-let animatingPiece = null, animFrame = 0, animDirection = 1, animScale = 1;
-const completeMsg = document.getElementById("completeMsg");
-const messageText = document.getElementById("messageText");
-const restartBtn = document.getElementById("restartBtn");
-const pauseBtn = document.getElementById("pauseBtn");
-const timerDisplay = document.getElementById("timer");
-const continueBtn = document.getElementById("continueBtn"); // Obtener referencia al botón "Siguiente"
-const puzzleWrapper = document.getElementById("puzzleWrapper");
-const placeSound = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg");
-const failSound = new Audio("https://actions.google.com/sounds/v1/cartoon/concussive_hit_guitar_boing.ogg");
-const successSound = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
-placeSound.volume = 0.3; failSound.volume = 0.4; successSound.volume = 0.5;
-let paused = false, timeLeft = 180, timerInterval;
-let puzzleEnded = false;
-
-const effectCanvas = document.createElement("canvas");
-const effectCtx = effectCanvas.getContext("2d");
-effectCanvas.style.position = "absolute";
-effectCanvas.style.top = "0";
-effectCanvas.style.left = "0";
-effectCanvas.style.pointerEvents = "none";
-effectCanvas.style.width = "100%";
-effectCanvas.style.height = "100%";
-puzzleWrapper.appendChild(effectCanvas);
-
-img.onload = () => { init(); };
-img.src = imageSrc;
-
-window.addEventListener("resize", () => {
-    // Retraso para asegurar que las dimensiones de puzzleWrapper se han actualizado
-    setTimeout(resizePieces, 100);
-});
-window.addEventListener("orientationchange", () => {
-    // Retraso para asegurar que las dimensiones de puzzleWrapper se han actualizado
-    setTimeout(resizePieces, 300);
-});
-
-function resizePieces() {
-  const w = puzzleWrapper.clientWidth;
-  const h = puzzleWrapper.clientHeight;
-
-  canvas.width = w;
-  canvas.height = h;
-  effectCanvas.width = w;
-  effectCanvas.height = h;
-
-  const pw = w / cols;
-  const ph = h / rows;
-
-  pieces.forEach(p => {
-    // Calculamos la posición correcta basada en el nuevo tamaño del puzzleWrapper
-    const colIndex = Math.round(p.correctX / (p.w || 1)); // Evitar división por cero
-    const rowIndex = Math.round(p.correctY / (p.h || 1));
-
-    p.w = pw;
-    p.h = ph;
-
-    p.correctX = colIndex * pw;
-    p.correctY = rowIndex * ph;
-
-    // Ajustar la posición de las piezas no colocadas para que no se salgan
-    if (!p.placed) {
-      p.x = Math.min(Math.max(p.x, 0), w - pw);
-      p.y = Math.min(Math.max(p.y, 0), h - ph);
-    } else {
-      // Las piezas ya colocadas se reajustan a su nueva posición correcta
-      p.x = p.correctX;
-      p.y = p.correctY;
+/* --- Datos retos --- */
+const retos = [
+    {
+        tipo: "opcion",
+        pregunta: "1. ¿Cuántas Aventuras pueden hacerse con Valencia be Guides?",
+        opciones: ["4", "5", "6", "7"],
+        correctas: ["7"],
+        multiple: false
+    },
+    {
+        tipo: "opcion",
+        pregunta: "2. ¿Sabría decirme cómo se llaman estas Torres?",
+        opciones: ["Torres de Quart", "Torres de Serranos", "Torre del Miguelete", "Torre de Santa catalina"],
+        correctas: ["Torres de Serranos"],
+        multiple: false
+    },
+    {
+        tipo: "opcion",
+        pregunta: "3. ¿En la cumbre de las torres ondea la bandera de Valencia: sus colores se componen de rojo, amarillo y… ?",
+        opciones: ["Violeta", "Verde", "Azul"],
+        correctas: ["Azul"],
+        multiple: false
+    },
+    {
+        tipo: "texto",
+        pregunta: "4. ¿Sabría decirme el nombre de la calle?",
+        correctaTexto: "Calle Muro de Santa Ana"
+    },
+    {
+        tipo: "opcion",
+        pregunta: "5. ¿Qué porta San Lorenzo en la mano?",
+        opciones: ["Una Paloma", "Una cuchara", "Una parrilla"],
+        correctas: ["Una parrilla"],
+        multiple: false
+    },
+    {
+        tipo: "opcion",
+        pregunta: "6. ¿Con qué mano sujeta Neptuno la cornucopia?",
+        opciones: ["Izquierda", "Derecha"],
+        correctas: ["Derecha"],
+        multiple: false
+    },
+    {
+        tipo: "texto",
+        pregunta: "7. ¿Cuántas figuras rodean la fuente?",
+        correctaTexto: "8"
+    },
+    {
+        tipo: "puzzle",
+        pregunta: "8. Plaza de la Virgen",
+        puzzleSrc: "P8_puzzle_plaza_virgen.html"
+    },
+    {
+        tipo: "opcion",
+        pregunta: "9. ¿Qué figura esculpida puede verse en el marco del cuadro?",
+        opciones: ["Un Dragón", "Un Murciélago", "Una Corona"],
+        correctas: ["Una Corona"],
+        multiple: false
+    },
+    {
+        tipo: "opcion-multiple",
+        pregunta: "10. ¿Qué puede verse dentro?",
+        opciones: ["Un Altar", "Una bandera", "Una espada"],
+        correctas: ["Un Altar", "Una bandera"],
+        multiple: true
+    },
+    {
+        tipo: "texto",
+        pregunta: "11. Sobre ésta hay una placa conmemorativa. ¿En qué año fue expuesta dicha placa?",
+        correctaTexto: "1952"
+    },
+    {
+        tipo: "texto",
+        pregunta: "12. ¿En qué año se edificó esta finca? ¡Pista! Mire en la parte superior de la fachada.",
+        correctaTexto: "1906"
+    },
+    {
+        tipo: "opcion",
+        pregunta: "13. ¿Qué puede verse dentro?",
+        opciones: ["Una Plaza de Toros", "Unos baños romanos", "Una estación de metro"],
+        correctas: ["Unos baños romanos"],
+        multiple: false
+    },
+    {
+        tipo: "opcion",
+        pregunta: "14. ¿Sabría determinar qué geometría tiene?",
+        opciones: ["hexagonal", "Octogonal", "Cuadrangular"],
+        correctas: ["hexagonal"],
+        multiple: false
+    },
+    {
+        tipo: "texto",
+        pregunta: "15. ¿Cuántos Arcos componen la puerta?",
+        correctaTexto: "6"
+    },
+    {
+        tipo: "opcion",
+        pregunta: "16. ¿Recuerda qué animal corona el escudo municipal?",
+        opciones: ["Un Dragón", "Un Murciélago", "Un Caballo"],
+        correctas: ["Un Murciélago"],
+        multiple: false
+    },
+    {
+        tipo: "opcion",
+        pregunta: "17. ¡Preste atención a la fachada de la primera torre! ¿Qué Fruta Cítrica natural de Valencia decora la fachada?",
+        opciones: ["Limones", "Pomelos", "Naranjas"],
+        correctas: ["Naranjas"],
+        multiple: false
+    },
+    {
+        tipo: "puzzle",
+        pregunta: "18. Plaza de Toros y Estación del Norte",
+        puzzleSrc: "P18_puzzle_plaza_de_Toros_y_estacion_norte.html"
+    },
+    {
+        tipo: "texto",
+        pregunta: "19. ¿Sabría decirme qué comercio alberga dicho edificio?",
+        correctaTexto: "?"
+    },
+    {
+        tipo: "opcion-multiple",
+        pregunta: "20. Sobre la entrada principal, en un arco de medio punto, figuras alegóricas representan a los cinco continentes. ¿Qué porta la figura central?",
+        opciones: ["Una Corona", "Una Espada", "Una Antorcha"],
+        correctas: ["Una Corona", "Una Espada"],
+        multiple: true
+    },
+    {
+        tipo: "opcion",
+        pregunta: "21. ¿Qué porta la figura en la mano?",
+        opciones: ["Una balanza", "Un libro", "Una pluma"],
+        correctas: ["Una balanza"],
+        multiple: false
+    },
+    {
+        tipo: "texto",
+        pregunta: "22. ¿Cuantas plantas tiene el edificio?",
+        correctaTexto: "10"
+    },
+    {
+        tipo: "opcion",
+        pregunta: "23. Busque la vidriera con los colores de la Señera valenciana en la fachada del edificio. ¿Sabría determinar qué forma tiene?",
+        opciones: ["Cuadrangular", "Redonda", "Triangular"],
+        correctas: ["Redonda"],
+        multiple: false
+    },
+    {
+        tipo: "opcion-multiple",
+        pregunta: "24. ¿Qué sostiene la virgen en su mano?",
+        opciones: ["Un Rosario", "Un niño", "Una corona"],
+        correctas: ["Un Rosario", "Un niño"],
+        multiple: true
+    },
+    {
+        tipo: "opcion",
+        pregunta: "25. ¿Qué le entrega el ángel al niño?",
+        opciones: ["Una paloma", "Un orbe", "Alimentos"],
+        correctas: ["Un orbe"],
+        multiple: false
+    },
+    {
+        tipo: "puzzle",
+        pregunta: "26. Lonja de la Seda",
+        puzzleSrc: "P26_puzzle_lonja.html"
+    },
+    {
+        tipo: "opcion-multiple",
+        pregunta: "27. El barquero que rema a contracorriente.",
+        opciones: ["Un hombre con rostro triste manejando un pequeño bote de madera escapa a contracorriente de un monstruo."],
+        correctas: ["Un hombre con rostro triste manejando un pequeño bote de madera escapa a contracorriente de un monstruo."],
+        multiple: true
+    },
+    {
+        tipo: "opcion-multiple",
+        pregunta: "28. Un árbol muerto: símbolo del Pecado, se ve entre las dos hojas de la puerta y cumple la función de parteluz.",
+        opciones: ["Observe en la copa del árbol como 4 hombres desnudos se azotan entre si."],
+        correctas: ["Observe en la copa del árbol como 4 hombres desnudos se azotan entre si."],
+        multiple: true
+    },
+    {
+        tipo: "opcion-multiple",
+        pregunta: "29. A la derecha, un ángel que muestra su pene y...",
+        opciones: ["se dispone a introducirlo en un jarrón que sostiene con la otra mano. Algo extraño e inusual ¿no le parece?"],
+        correctas: ["se dispone a introducirlo en un jarrón que sostiene con la otra mano. Algo extraño e inusual ¿no le parece?"],
+        multiple: true
+    },
+    {
+        tipo: "opcion-multiple",
+        pregunta: "30. En el centro El barbudo y el león:",
+        opciones: ["Original y contradictoria escena en la cual el manso es precisamente el león y no el anciano barbudo."],
+        correctas: ["Original y contradictoria escena en la cual el manso es precisamente el león y no el anciano barbudo."],
+        multiple: true
+    },
+    {
+        tipo: "opcion-multiple",
+        pregunta: "31. ¡Aquí va un reto extra! ¡Busque al fornicador de la lonja!",
+        opciones: ["En una de sus ventanas, hallará a un hombre tallado, no se le advierte su cabeza, pero sí sus genitales, Y muy claramente."],
+        correctas: ["En una de sus ventanas, hallará a un hombre tallado, no se le advierte su cabeza, pero sí sus genitales, Y muy claramente."],
+        multiple: true
+    },
+    {
+        tipo: "opcion",
+        pregunta: "32. ¿Qué sostiene el niño en sus manos?",
+        opciones: ["Una paloma", "Una Concha", "Alimentos"],
+        correctas: ["Una Concha"],
+        multiple: false
     }
-  });
-  draw();
-}
+];
 
-function init() {
-  puzzleEnded = false;
-  const w = puzzleWrapper.clientWidth, h = puzzleWrapper.clientHeight;
-  canvas.width = w; canvas.height = h;
-  effectCanvas.width = w; effectCanvas.height = h;
-  const pw = w / cols, ph = h / rows;
+/* Variables para control */
+let indiceReto = 0;
+const retoDiv = document.getElementById("reto");
+const btnEnviar = document.createElement("button");
+btnEnviar.textContent = "Enviar";
+btnEnviar.className = "btn";
 
-  pieces = []; placedCount = 0;
-  completeMsg.style.display = "none";
-  puzzleWrapper.style.borderColor = "#333";
-  continueBtn.style.display = 'none'; // Ocultar el botón al iniciar/reiniciar
+const btnMostrarRespuesta = document.getElementById("btnMostrarRespuesta");
+const divRespuestaCorrecta = document.getElementById("respuestaCorrectaTexto");
+const btnNext = document.getElementById("btnNextAfterReto");
+const fuegosDiv = document.getElementById("fuegos");
 
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      pieces.push({
-        sx: c * img.width / cols, sy: r * img.height / rows,
-        sw: img.width / cols, sh: img.height / rows,
-        x: Math.random() * (w - pw), y: Math.random() * (h - ph),
-        w: pw, h: ph, correctX: c * pw, correctY: r * ph,
-        placed: false, scale: 1
-      });
+// Duración de la animación de fuegos artificiales (solo para retos de opción/texto)
+const DURACION_TOTAL_MS = 3000;
+
+/* Función para limpiar el reto y mostrar uno nuevo */
+function mostrarReto() {
+    // Limpiamos y ocultamos elementos visuales
+    btnNext.style.display = "none";
+    btnMostrarRespuesta.style.display = "none";
+    divRespuestaCorrecta.style.display = "none"; // Ocultar el mensaje de respuesta
+    divRespuestaCorrecta.textContent = "";
+    retoDiv.classList.remove("correct", "incorrect");
+    fuegosDiv.innerHTML = "";
+    fuegosDiv.style.display = "none"; // Asegura que los fuegos de la página principal estén ocultos
+
+    const reto = retos[indiceReto];
+    retoDiv.innerHTML = "";
+    retoDiv.setAttribute("tabindex", "0");
+
+    let preguntaElem = document.createElement("h3");
+    preguntaElem.textContent = `${reto.pregunta}`;
+    retoDiv.appendChild(preguntaElem);
+
+    if (reto.tipo === "opcion" || reto.tipo === "opcion-multiple") {
+        const inputType = reto.multiple ? "checkbox" : "radio";
+        reto.opciones.forEach((opcion, i) => {
+            const divOpcion = document.createElement("div");
+            divOpcion.className = "respuesta";
+            const input = document.createElement("input");
+            input.type = inputType;
+            input.name = "op";
+            input.value = opcion;
+            input.id = "opcion" + i;
+            divOpcion.appendChild(input);
+
+            const label = document.createElement("label");
+            label.htmlFor = input.id;
+            label.textContent = opcion;
+            divOpcion.appendChild(label);
+            retoDiv.appendChild(divOpcion);
+        });
+        retoDiv.appendChild(btnEnviar);
+        btnEnviar.style.display = "inline-block";
+        btnEnviar.disabled = false;
+    } else if (reto.tipo === "texto") {
+        const inputTexto = document.createElement("input");
+        inputTexto.type = "text";
+        inputTexto.id = "respuestaTexto";
+        inputTexto.autocomplete = "off";
+        inputTexto.spellcheck = false;
+        inputTexto.setAttribute("inputmode", "text");
+        inputTexto.style.fontSize = "1.2em";
+        inputTexto.style.width = "100%";
+        inputTexto.placeholder = "Escriba su respuesta aquí...";
+        retoDiv.appendChild(inputTexto);
+        retoDiv.appendChild(btnEnviar);
+        btnEnviar.style.display = "inline-block";
+        btnEnviar.disabled = false;
+        setTimeout(() => inputTexto.focus(), 200);
+    } else if (reto.tipo === "puzzle") {
+        const puzzleIframe = document.createElement("iframe");
+        puzzleIframe.id = "puzzleIframe";
+        puzzleIframe.src = reto.puzzleSrc;
+        puzzleIframe.frameBorder = "0";
+        puzzleIframe.allowFullscreen = true;
+        retoDiv.appendChild(puzzleIframe);
+
+        // Ocultamos btnEnviar, btnMostrarRespuesta y btnNext para los puzzles
+        // El avance lo gestiona el puzzle directamente al hacer clic en su botón "Continuar"
+        btnEnviar.style.display = "none";
+        btnMostrarRespuesta.style.display = "none";
+        btnNext.style.display = "none";
     }
-  }
-
-  timeLeft = 180; // Reiniciar tiempo
-  updateTimerDisplay(); // Actualizar visualmente
-  startTimer(); // Iniciar cuenta
-  draw();
 }
 
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  // Dibujar piezas colocadas primero, luego las no colocadas para que se vean por encima
-  for (const p of pieces.filter(p => p.placed)) drawPiece(p);
-  for (const p of pieces.filter(p => !p.placed)) drawPiece(p);
+/* Animación de fuegos artificiales valencianos (Solo para retos de opción/texto, NO para puzzles) */
+function fuegosArtificiales() {
+    const NUM_CHISPAS_POR_FUEGO = 30;
+    const NUM_EXPLOSIONES = 15;
 
-  if (animatingPiece) {
-    animatingPiece.scale = animScale;
-    animFrame++;
-    animScale += 0.05 * animDirection;
-    if (animFrame >= 10) animDirection = -1;
-    if (animFrame >= 20) {
-      animatingPiece.scale = 1;
-      animatingPiece = null;
-      animFrame = 0; animDirection = 1;
+    fuegosDiv.innerHTML = "";
+    fuegosDiv.style.display = "block"; // Mostrar el contenedor de fuegos
+
+    for (let e = 0; e < NUM_EXPLOSIONES; e++) {
+        const delayExplosion = (DURACION_TOTAL_MS / NUM_EXPLOSIONES) * e;
+
+        setTimeout(() => {
+            const startX = Math.random() * fuegosDiv.offsetWidth;
+            const startY = Math.random() * fuegosDiv.offsetHeight;
+
+            for (let i = 0; i < NUM_CHISPAS_POR_FUEGO; i++) {
+                let chispa = document.createElement("div");
+                chispa.style.position = "absolute";
+                chispa.style.borderRadius = "50%";
+                chispa.style.width = "12px";
+                chispa.style.height = "12px";
+                chispa.style.background = `hsl(${Math.random() * 360}, 100%, 70%)`;
+                chispa.style.opacity = "1";
+                chispa.style.left = `${startX}px`;
+                chispa.style.top = `${startY}px`;
+                chispa.style.zIndex = "10";
+
+                fuegosDiv.appendChild(chispa);
+
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 80 + 40;
+                const endX = startX + distance * Math.cos(angle);
+                const endY = startY + distance * Math.sin(angle);
+
+                const chispaDuration = DURACION_TOTAL_MS / NUM_EXPLOSIONES * 1.5;
+
+                chispa.style.transition = `all ${chispaDuration}ms ease-out`;
+                setTimeout(() => {
+                    chispa.style.left = `${endX}px`;
+                    chispa.style.top = `${endY}px`;
+                    chispa.style.opacity = "0";
+                    chispa.style.transform = "scale(0.5)";
+                }, 10);
+
+                setTimeout(() => {
+                    if (chispa.parentNode) {
+                        chispa.parentNode.removeChild(chispa);
+                    }
+                }, delayExplosion + chispaDuration + 50);
+            }
+        }, delayExplosion);
     }
-  }
-  requestAnimationFrame(draw);
+    // Ocultar el contenedor de fuegos después de que terminen las animaciones
+    setTimeout(() => {
+        fuegosDiv.style.display = "none";
+    }, DURACION_TOTAL_MS + 100);
 }
 
-function drawPiece(piece) {
-  ctx.save();
-  ctx.translate(piece.x + piece.w / 2, piece.y + piece.h / 2);
-  ctx.scale(piece.scale, piece.scale);
-  ctx.translate(-piece.w / 2, -piece.h / 2);
-  ctx.drawImage(img, piece.sx, piece.sy, piece.sw, piece.sh, 0, 0, piece.w, piece.h);
-  ctx.strokeStyle = '#333';
-  ctx.lineWidth = 1; /* Bordes de igual grosor */
-  ctx.strokeRect(0, 0, piece.w, piece.h);
-  ctx.restore();
+
+/* Función para vibrar */
+function vibrar() {
+    if (navigator.vibrate) navigator.vibrate(300);
 }
 
-function onPointerDown(e) {
-  if (puzzleEnded || paused) return;
-  if (e.target === canvas) {
-      e.preventDefault();
-  }
-  const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-  for (let i = pieces.length - 1; i >= 0; i--) {
-    const p = pieces[i];
-    if (!p.placed && x >= p.x && x <= p.x + p.w && y >= p.y && y <= p.y + p.h) {
-      draggingPiece = p;
-      offsetX = x - p.x;
-      offsetY = y - p.y;
-      pieces.splice(i, 1); // Mueve la pieza al final para que se dibuje encima
-      pieces.push(draggingPiece);
-      break;
-    }
-  }
-}
+/* Función para verificar la respuesta (para retos de opción/texto) */
+function verificar() {
+    const reto = retos[indiceReto];
+    btnEnviar.disabled = true;
+    divRespuestaCorrecta.style.display = "none"; // Ocultar antes de mostrar nuevo mensaje
+    divRespuestaCorrecta.textContent = "";
+    retoDiv.classList.remove("correct", "incorrect");
+    fuegosDiv.innerHTML = "";
+    fuegosDiv.style.display = "none";
 
-function onPointerMove(e) {
-  if (!draggingPiece || puzzleEnded || paused) return;
-  e.preventDefault();
-  const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-  draggingPiece.x = Math.min(Math.max(x - offsetX, 0), canvas.width - draggingPiece.w);
-  draggingPiece.y = Math.min(Math.max(y - offsetY, 0), canvas.height - draggingPiece.h);
-}
+    btnNext.style.display = "none";
 
-function onPointerUp(e) {
-  if (!draggingPiece || puzzleEnded || paused) return;
-  // Margen de tolerancia para colocar la pieza
-  if (Math.abs(draggingPiece.x - draggingPiece.correctX) < draggingPiece.w / 4 &&
-      Math.abs(draggingPiece.y - draggingPiece.correctY) < draggingPiece.h / 4) {
-    draggingPiece.x = draggingPiece.correctX;
-    draggingPiece.y = draggingPiece.correctY;
-    draggingPiece.placed = true;
-    placedCount++;
-    placeSound.play();
-    animatingPiece = draggingPiece; // Activar animación de pieza
-    animFrame = 0; animDirection = 1; animScale = 1;
-  }
-  draggingPiece = null;
-  if (placedCount === pieces.length) {
-    endPuzzle(true);
-  }
-}
+    let esCorrecto = false;
 
-function startTimer() {
-  clearInterval(timerInterval);
-  timerInterval = setInterval(() => {
-    if (!paused && !puzzleEnded) {
-      timeLeft--;
-      updateTimerDisplay();
-      if (timeLeft <= 0) {
-        endPuzzle(false);
-      }
-    }
-  }, 1000);
-}
-
-function updateTimerDisplay() {
-  const m = Math.floor(timeLeft / 60);
-  const s = timeLeft % 60;
-  timerDisplay.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-}
-
-function endPuzzle(success) {
-  puzzleEnded = true;
-  clearInterval(timerInterval);
-  // completeMsg.style.display = "block"; // Se mantiene la visibilidad del div si es necesario para otros elementos
-  continueBtn.style.display = 'inline-block'; // Mostrar el botón "Siguiente"
-
-  if (success) {
-    successSound.play();
-    puzzleWrapper.style.borderColor = "green";
-    runFireworks();
-    window.parent.postMessage("puzzle-state-completed", "*"); // Mensaje al padre
-  } else {
-    failSound.play();
-    puzzleWrapper.style.borderColor = "red";
-    runConfetti();
-    window.parent.postMessage("puzzle-state-timeout", "*"); // Mensaje al padre
-  }
-  // Se elimina window.parent.postMessage('advance-to-next', '*'); de aquí
-  // Ahora se activa con el click del botón continueBtn
-}
-
-// Event Listener para el botón "Siguiente"
-continueBtn.addEventListener('click', () => {
-    window.parent.postMessage('advance-to-next', '*');
-});
-
-function runFireworks() {
-  let duration = 5000;
-  let startTime = null;
-  const particles = [];
-  const colors = ["#ff2e2e","#ff7f50","#ffcc00","#3cff5f","#1e90ff","#9b30ff"];
-
-  effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
-
-  function createParticle(x, y) {
-    return {
-      x, y,
-      vx: (Math.random() - 0.5) * 6,
-      vy: (Math.random() - 0.5) * 6,
-      life: 100,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      size: Math.random() * 3 + 2
-    };
-  }
-
-  function loop(timestamp) {
-    if (!startTime) startTime = timestamp;
-    let elapsed = timestamp - startTime;
-    effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
-
-    if (elapsed < duration) {
-      if (particles.length < 100) {
-        let x = Math.random() * effectCanvas.width;
-        let y = Math.random() * effectCanvas.height / 2;
-        for(let i=0; i<5; i++) {
-          particles.push(createParticle(x, y));
+    if (reto.tipo === "opcion") {
+        const seleccion = document.querySelector('input[name="op"]:checked');
+        if (!seleccion) {
+            alert("Por favor, seleccione una opción.");
+            btnEnviar.disabled = false;
+            return;
         }
-      }
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.1;
-        p.life--;
-        if (p.life <= 0) particles.splice(i, 1);
-        else {
-          effectCtx.beginPath();
-          effectCtx.fillStyle = p.color;
-          effectCtx.shadowColor = p.color;
-          effectCtx.shadowBlur = 10;
-          effectCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-          effectCtx.fill();
-          effectCtx.closePath();
+        esCorrecto = reto.correctas.includes(seleccion.value);
+    } else if (reto.tipo === "opcion-multiple") {
+        const checks = Array.from(document.querySelectorAll('input[name="op"]:checked')).map(i => i.value);
+        if (checks.length === 0) {
+            alert("Por favor, seleccione al menos una opción.");
+            btnEnviar.disabled = false;
+            return;
         }
-      }
-      requestAnimationFrame(loop);
-    } else {
-      effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+        esCorrecto = reto.correctas.every(c => checks.includes(c)) && checks.every(s => reto.correctas.includes(s));
+    } else if (reto.tipo === "texto") {
+        // Para retos de texto, la lógica actual simplemente los marca como correctos.
+        // Si necesitas verificación de texto, se debe añadir aquí.
+        esCorrecto = true;
     }
-  }
-  requestAnimationFrame(loop);
+
+    if (esCorrecto) {
+        retoDiv.classList.add("correct");
+        fuegosArtificiales(); // Activar fuegos para preguntas de opción/texto
+        divRespuestaCorrecta.textContent = "¡Correcto!";
+        divRespuestaCorrecta.style.display = "block"; // Mostrar el mensaje
+        btnMostrarRespuesta.style.display = "inline-block";
+        setTimeout(() => {
+            divRespuestaCorrecta.style.display = "none"; // Ocultar el mensaje después de un tiempo
+            btnNext.style.display = "inline-block"; // Mostrar botón siguiente
+        }, DURACION_TOTAL_MS); // Espera a que los fuegos terminen
+    } else {
+        retoDiv.classList.add("incorrect");
+        vibrar(); // Vibrar al fallar en preguntas de opción/texto
+        divRespuestaCorrecta.textContent = "Respuesta incorrecta. Inténtalo de nuevo.";
+        divRespuestaCorrecta.style.display = "block"; // Mostrar el mensaje
+        btnEnviar.disabled = false;
+        setTimeout(() => {
+            divRespuestaCorrecta.style.display = "none"; // Ocultar el mensaje después de un tiempo
+        }, 2000); // Ocultar mensaje de incorrecto después de 2 segundos
+    }
 }
 
-function runConfetti() {
-  let duration = 5000;
-  let startTime = null;
-  const confettiPieces = [];
-  const colors = ["#ff0","#f0f","#0ff","#0f0","#00f","#f00"];
-
-  effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
-
-  function createConfetti() {
-    return {
-      x: Math.random() * effectCanvas.width,
-      y: Math.random() * -20,
-      size: Math.random() * 8 + 8,
-      speedY: Math.random() * 3 + 2,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      tilt: Math.random() * 10 - 5,
-      tiltSpeed: Math.random() * 0.1 + 0.05
-    };
-  }
-
-  for(let i = 0; i < 150; i++) {
-    confettiPieces.push(createConfetti());
-  }
-
-  function loop(timestamp) {
-    if (!startTime) startTime = timestamp;
-    let elapsed = timestamp - startTime;
-    effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
-
-    if (elapsed < duration) {
-      confettiPieces.forEach(p => {
-        p.y += p.speedY;
-        p.tilt += p.tiltSpeed;
-        if (p.y > effectCanvas.height) {
-          p.x = Math.random() * effectCanvas.width;
-          p.y = Math.random() * -20;
-        }
-        effectCtx.save();
-        effectCtx.translate(p.x, p.y);
-        effectCtx.rotate(p.tilt);
-        effectCtx.fillStyle = p.color;
-        ctx.strokeStyle = '#333';
-        ctx.lineWidth = 1;
-        effectCtx.fillRect(-p.size/2, -p.size/4, p.size, p.size/2);
-        effectCtx.strokeRect(-p.size/2, -p.size/4, p.size, p.size/2);
-        effectCtx.restore();
-      });
-      requestAnimationFrame(loop);
+/* Mostrar respuesta correcta (para retos de opción/texto) */
+btnMostrarRespuesta.addEventListener("click", () => {
+    const reto = retos[indiceReto];
+    if (reto.tipo === "opcion" || reto.tipo === "opcion-multiple") {
+        divRespuestaCorrecta.textContent = "Respuesta correcta: " + reto.correctas.join(", ");
+    } else if (reto.tipo === "texto") {
+        divRespuestaCorrecta.textContent = "Respuesta correcta: " + reto.correctaTexto;
     } else {
-      effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+        divRespuestaCorrecta.textContent = "No hay respuesta correcta disponible para este tipo de reto.";
     }
-  }
-  requestAnimationFrame(loop);
-}
-
-restartBtn.addEventListener("click", () => {
-  paused = false;
-  puzzleEnded = false;
-  completeMsg.style.display = "none";
-  puzzleWrapper.style.borderColor = "#333";
-  init(); // Reiniciar el puzzle y ocultar el botón "Siguiente"
-});
-pauseBtn.addEventListener("click", () => {
-  paused = !paused;
-  pauseBtn.textContent = paused ? "▶️ Continuar" : "⏸️ Pausa";
+    divRespuestaCorrecta.style.display = "block"; // Asegurar que se muestre
 });
 
-canvas.addEventListener("pointerdown", onPointerDown);
-canvas.addEventListener("pointermove", onPointerMove);
-canvas.addEventListener("pointerup", onPointerUp);
-canvas.addEventListener("pointercancel", onPointerUp);
-canvas.addEventListener("pointerout", onPointerUp);
-canvas.addEventListener("pointerleave", onPointerUp);
+/* Botón siguiente (solo para retos de opción/texto) */
+btnNext.addEventListener("click", () => {
+    indiceReto++;
+    if (indiceReto >= retos.length) {
+        alert("¡Has terminado todos los retos de la Aventura 1!");
+        indiceReto = 0; // Opcional: Reiniciar o redirigir al final de la aventura
+    }
+    mostrarReto();
+});
+
+/* Botón enviar (solo para retos de opción/texto) */
+btnEnviar.addEventListener("click", verificar);
+
+/* Listener para mensajes del iframe del puzzle */
+window.addEventListener("message", (event) => {
+    // Opcional: Puedes añadir una verificación de origen si tus puzzles se alojan en un dominio diferente
+    // if (event.origin !== "https://valenciavguides.github.io") return;
+
+    // Mensaje del puzzle para que la página principal reaccione con el borde de éxito
+    if (event.data === "puzzle-state-completed") {
+        console.log('Mensaje recibido: Puzzle completado. Poniendo borde verde.');
+        retoDiv.classList.add("correct"); // Borde verde
+        retoDiv.classList.remove("incorrect"); // Asegurarse de quitar el borde rojo si estaba
+        divRespuestaCorrecta.textContent = "🎉 ¡Puzzle Resuelto con Éxito!"; // Mensaje
+        divRespuestaCorrecta.style.display = "block"; // Mostrar mensaje
+    }
+    // Mensaje del puzzle para que la página principal reaccione con el borde de fallo por tiempo
+    else if (event.data === "puzzle-state-timeout") {
+        console.log('Mensaje recibido: Tiempo del puzzle agotado. Poniendo borde rojo y vibrando.');
+        retoDiv.classList.add("incorrect"); // Borde rojo
+        retoDiv.classList.remove("correct"); // Asegurarse de quitar el borde verde si estaba
+        vibrar(); // Vibración al agotar el tiempo
+        divRespuestaCorrecta.textContent = "⏰ Tiempo agotado. Gracias por participar."; // Mensaje
+        divRespuestaCorrecta.style.display = "block"; // Mostrar mensaje
+    }
+    // Esta es la señal FINAL del puzzle para AVANZAR al siguiente reto
+    // Se activa cuando el usuario hace clic en el botón "Continuar" dentro del puzzle.
+    else if (event.data === "advance-to-next") {
+        console.log('Mensaje recibido: Avance al siguiente reto solicitado por el puzzle.');
+        divRespuestaCorrecta.style.display = "none"; // Ocultar mensaje al avanzar
+        indiceReto++; // Avanza al siguiente reto
+        if (indiceReto >= retos.length) {
+            alert("¡Has terminado todos los retos de la Aventura 1!");
+            indiceReto = 0; // Opcional: Reiniciar o redirigir al final de la aventura
+        }
+        mostrarReto(); // Carga y muestra el siguiente reto
+    }
+});
+
+/* Mostrar primer reto al cargar */
+mostrarReto();
 
 </script>
 </body>
