@@ -13,17 +13,20 @@
         align-items: center; justify-content: flex-start;
         overflow: hidden; /* Asegura que no haya scroll */
     }
+    /* El h1 ha sido eliminado del HTML, por lo que esta regla ya no es estrictamente necesaria si no hay h1,
+       pero la mantengo comentada por si decides añadir un h1 en el futuro.
     h1 {
         font-size: 1.2em;
         margin: 0;
-        padding: 5px 0;
-        text-align: center;
+        padding: 0; /* Reducido a 0 */
+    text-align: center;
         width: 99vw;
         max-width: 1000px;
         padding-top: 0;
         margin-top: 0;
-        display: block; /* Visible por defecto en portrait */
+        display: block;
     }
+    */
     #topBar {
         display: flex;
         flex-direction: row; /* Siempre en fila para que los botones estén en una línea */
@@ -33,7 +36,7 @@
         max-width: 1000px;
         gap: 10px; /* Espacio entre los elementos de la topBar */
         flex-wrap: nowrap;
-        padding: 5px 0;
+        padding: 5px 0; /* Mantiene un pequeño padding vertical para la barra */
         position: relative;
         justify-content: center; /* Centrar elementos por defecto */
         height: auto; /* Ajuste automático de altura */
@@ -74,7 +77,7 @@
     }
     #puzzleWrapper {
         width: 99.5vw; /* Muy poco aumento de anchura */
-        max-width: 1200px; /* Permite que la anchura aumente un poco más */
+        max-width: 1200px; /* Ancho máximo para pantallas grandes */
         background: #ddd;
         position: relative;
         border: 5px solid #333; /* Grosor de borde constante */
@@ -86,9 +89,11 @@
         align-items: center;
 
         /* Cuadro negro más grande en vertical (portrait) */
-        /* Restamos la altura de topBar (aproximadamente 40-50px) y h1 (aproximadamente 30px) */
-        height: calc(100vh - 70px); /* Ajuste basado en el tamaño de la topBar + h1 */
-        max-height: 950px;
+        /* Ahora restamos solo la altura de topBar (aproximadamente 40-50px) */
+        height: calc(100vh - 95px); /* Ajuste para que el puzzle gane más altura */
+        
+        /* Limita la altura máxima para pantallas muy altas */
+        max-height: 950px; 
     }
     canvas {
         width: 100%; height: 100%; display: block;
@@ -109,9 +114,11 @@
     }
 
     @media (orientation: landscape) {
+        /* h1 ya no existe, por lo que esta regla no es necesaria.
         h1 {
-            display: none; /* Oculta el título en orientación horizontal */
+            display: none;
         }
+        */
         #topBar {
             justify-content: center; /* Centrar todos los elementos en landscape */
             height: 40px; /* Altura reducida de topBar en landscape */
@@ -154,7 +161,6 @@
 </head>
 <body>
 
-<h1></h1>
 <div id="topBar">
     <div id="leftControls">
         <button id="restartBtn">🔄 Reiniciar</button>
@@ -552,7 +558,7 @@ pauseBtn.addEventListener("click", () => {
         timerDisplay.style.display = 'none'; // Ocultar el temporizador cuando está en pausa
     } else {
         pauseBtn.textContent = "⏸️ Pausa";
-        timerDisplay.style.display = 'inline-block'; // Mostrar el temporador cuando se reanuda
+        timerDisplay.style.display = 'inline-block'; // Mostrar el temporizador cuando se reanuda
     }
 });
 
