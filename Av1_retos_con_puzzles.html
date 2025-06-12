@@ -7,15 +7,13 @@
 <style>
     body {
         font-family: "Book Antiqua", Palatino, serif;
-        /* ANTES: margin: 1em; */
-        margin: 0 1em 1em; /* MODIFICADO: Elimina el margen superior, mantiene los demás */
+        margin: 1em;
         background: #fff;
         color: #222;
         font-size: 16px; /* Asegura un tamaño base para 'em' */
     }
     h2 { /* Este es el título visible en la página */
         margin-bottom: 0.8em;
-        margin-top: 0; /* AÑADIDO: Asegura que no haya margen superior en el h2 */
     }
     h3 {
         margin-bottom: 0.2em;
@@ -91,27 +89,6 @@
         display: none; /* Por defecto oculto, su visibilidad se controla con JS */
     }
 
-
-    #respuestaCorrectaTexto {
-        margin-top: 1em;
-        font-weight: bold;
-        text-align: center;
-        /* Estilos modificados: Ya no es una ventana flotante */
-        /* position: absolute; */
-        /* top: 50%; */
-        /* left: 50%; */
-        /* transform: translate(-50%, -50%); */
-        width: 100%; /* Ocupa el ancho completo disponible */
-        background-color: rgba(255, 255, 255, 0.9); /* Mantiene el fondo blanco semi-transparente */
-        padding: 1em;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        font-size: 1.5em;
-        color: #222;
-        z-index: 20; /* Puede eliminarse si no hay superposiciones */
-        display: none; /* Inicialmente oculto */
-        box-sizing: border-box; /* Asegura que padding no añada ancho extra */
-    }
     #fuegos {
         pointer-events: none;
         position: absolute;
@@ -143,8 +120,9 @@
 
     /* Media Query para móviles en horizontal: oculta el h2 y ajusta el espacio */
     @media (max-width: 800px) and (orientation: landscape) {
-        h2 {
-            display: none; /* Oculta el título "Reto Valencia be Guides" */
+        /* Se añade una clase para ocultar el h2 solo cuando el reto es un puzzle */
+        body.puzzle-active h2 {
+            display: none;
         }
         body {
             margin: 0.5em; /* Reduce los márgenes del body para ganar espacio */
@@ -179,15 +157,13 @@
 </head>
 <body>
 
-<h2></h2>
+<h2>Retos Valencia be Guides</h2>
 <div id="reto" tabindex="0"></div>
 
 <div id="button-container">
-    <button id="btnMostrarRespuesta">¿Respuesta Correcta?</button>
-    <button id="btnNextAfterReto">Continue su Aventura</button>
+    <button id="btnMostrarRespuesta">Respuesta Correcta</button>
+    <button id="btnNextAfterReto">Siguiente</button>
 </div>
-<div id="respuestaCorrectaTexto"></div>
-
 <div id="fuegos"></div>
 
 <script>
@@ -407,7 +383,6 @@ btnEnviar.textContent = "Enviar";
 btnEnviar.className = "btn";
 
 const btnMostrarRespuesta = document.getElementById("btnMostrarRespuesta");
-const divRespuestaCorrecta = document.getElementById("respuestaCorrectaTexto");
 const btnNext = document.getElementById("btnNextAfterReto");
 const fuegosDiv = document.getElementById("fuegos");
 
@@ -419,8 +394,6 @@ function mostrarReto() {
     // Limpiamos y ocultamos elementos visuales
     btnNext.style.display = "none";
     btnMostrarRespuesta.style.display = "none";
-    divRespuestaCorrecta.style.display = "none"; // Ocultar el mensaje de respuesta
-    divRespuestaCorrecta.textContent = "";
     retoDiv.classList.remove("correct", "incorrect");
     fuegosDiv.innerHTML = "";
     fuegosDiv.style.display = "none"; // Asegura que los fuegos de la página principal estén ocultos
@@ -432,6 +405,13 @@ function mostrarReto() {
     let preguntaElem = document.createElement("h3");
     preguntaElem.textContent = `${reto.pregunta}`;
     retoDiv.appendChild(preguntaElem);
+
+    // Lógica para añadir/quitar la clase 'puzzle-active' al body
+    if (reto.tipo === "puzzle") {
+        document.body.classList.add("puzzle-active");
+    } else {
+        document.body.classList.remove("puzzle-active");
+    }
 
     if (reto.tipo === "opcion" || reto.tipo === "opcion-multiple") {
         const inputType = reto.multiple ? "checkbox" : "radio";
@@ -553,8 +533,6 @@ function vibrar() {
 function verificar() {
     const reto = retos[indiceReto];
     btnEnviar.disabled = true;
-    divRespuestaCorrecta.style.display = "none"; // Ocultar antes de mostrar nuevo mensaje
-    divRespuestaCorrecta.textContent = "";
     retoDiv.classList.remove("correct", "incorrect");
     fuegosDiv.innerHTML = "";
     fuegosDiv.style.display = "none";
@@ -582,13 +560,13 @@ function verificar() {
     } else if (reto.tipo === "texto") {
         // Para retos de texto, la lógica actual simplemente los marca como correctos.
         // Si necesitas verificación de texto, se debe añadir aquí.
-        esCorrecto = true; // Si necesitas verificar el texto, modifica esta línea
+        esCorrecto = true;
     }
 
     if (esCorrecto) {
         retoDiv.classList.add("correct");
         fuegosArtificiales(); // Activar fuegos para preguntas de opción/texto
-        btnMostrarRespuesta.style.display = "inline-block"; // Mostrar botón de respuesta
+        btnMostrarRespuesta.style.display = "inline-block";
         setTimeout(() => {
             btnNext.style.display = "inline-block"; // Mostrar botón siguiente
         }, DURACION_TOTAL_MS); // Espera a que los fuegos terminen
@@ -596,25 +574,16 @@ function verificar() {
         retoDiv.classList.add("incorrect");
         vibrar(); // Vibrar al fallar en preguntas de opción/texto
         btnEnviar.disabled = false;
-        btnMostrarRespuesta.style.display = "inline-block"; // Mostrar botón de respuesta
         setTimeout(() => {
-            // No ocultar el mensaje de respuesta incorrecta si lo volvemos a mostrar con el botón.
-            // La visibilidad se controla al inicio de `mostrarReto` y `verificar`.
-        }, 2000); // Ocultar mensaje de incorrecto después de 2 segundos (ya no se muestra automáticamente)
+        }, 2000); // Ocultar mensaje de incorrecto después de 2 segundos
     }
 }
 
 /* Mostrar respuesta correcta (para retos de opción/texto) */
 btnMostrarRespuesta.addEventListener("click", () => {
-    const reto = retos[indiceReto];
-    if (reto.tipo === "opcion" || reto.tipo === "opcion-multiple") {
-        divRespuestaCorrecta.textContent = "Respuesta correcta: " + reto.correctas.join(", ");
-    } else if (reto.tipo === "texto") {
-        divRespuestaCorrecta.textContent = "Respuesta correcta: " + reto.correctaTexto;
-    } else {
-        divRespuestaCorrecta.textContent = "No hay respuesta correcta disponible para este tipo de reto.";
-    }
-    divRespuestaCorrecta.style.display = "block"; // Asegurar que se muestre
+    // La funcionalidad de mostrar el texto de la respuesta correcta ha sido eliminada
+    // ya que dependía del div #respuestaCorrectaTexto.
+    // Este botón ahora no hará nada visualmente en relación con el cartel.
 });
 
 /* Botón siguiente (solo para retos de opción/texto) */
@@ -640,8 +609,6 @@ window.addEventListener("message", (event) => {
         console.log('Mensaje recibido: Puzzle completado. Poniendo borde verde.');
         retoDiv.classList.add("correct"); // Borde verde
         retoDiv.classList.remove("incorrect"); // Asegurarse de quitar el borde rojo si estaba
-        // divRespuestaCorrecta.textContent = "🎉 ¡Puzzle Resuelto con Éxito!"; // Ya no se muestra automáticamente
-        // divRespuestaCorrecta.style.display = "block"; // Ya no se muestra automáticamente
     }
     // Mensaje del puzzle para que la página principal reaccione con el borde de fallo por tiempo
     else if (event.data === "puzzle-state-timeout") {
@@ -649,14 +616,11 @@ window.addEventListener("message", (event) => {
         retoDiv.classList.add("incorrect"); // Borde rojo
         retoDiv.classList.remove("correct"); // Asegurarse de quitar el borde verde si estaba
         vibrar(); // Vibración al agotar el tiempo
-        // divRespuestaCorrecta.textContent = "⏰ Tiempo agotado. Gracias por participar."; // Ya no se muestra automáticamente
-        // divRespuestaCorrecta.style.display = "block"; // Ya no se muestra automáticamente
     }
     // Esta es la señal FINAL del puzzle para AVANZAR al siguiente reto
     // Se activa cuando el usuario hace clic en el botón "Continuar" dentro del puzzle.
     else if (event.data === "advance-to-next") {
         console.log('Mensaje recibido: Avance al siguiente reto solicitado por el puzzle.');
-        divRespuestaCorrecta.style.display = "none"; // Ocultar mensaje al avanzar
         indiceReto++; // Avanza al siguiente reto
         if (indiceReto >= retos.length) {
             alert("¡Has terminado todos los retos de la Aventura 1!");
