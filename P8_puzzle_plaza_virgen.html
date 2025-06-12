@@ -23,7 +23,7 @@
   }
   #topBar {
     display: flex;
-    flex-direction: column; /* Por defecto, apila los elementos (botón Siguiente y controles) */
+    flex-direction: column; /* Por defecto, apila los elementos (botón Siguiente y controles) */
     align-items: center; /* Centra los elementos apilados horizontalmente */
     margin-bottom: 0;
     width: 99vw;
@@ -39,9 +39,8 @@
     flex-shrink: 1;
     min-width: 0;
     flex-grow: 1;
-    justify-content: flex-start; /* Alinea los botones de control a la izquierda dentro de su contenedor */
-    width: 100%; /* Asegura que ocupe todo el ancho disponible en la columna */
-    justify-content: center; /* Centra los controles en esta vista */
+    justify-content: center; /* Centra los controles en esta vista */
+    width: 100%; /* Asegura que ocupe todo el ancho disponible en la columna */
   }
   #restartBtn, #pauseBtn, #continueBtn {
     padding: 6px 12px;
@@ -62,15 +61,15 @@
   }
   #continueBtn {
     display: none; /* Oculto por defecto, visible solo al finalizar */
-    margin-bottom: 5px; /* Espacio entre el botón Siguiente y los controles */
+    margin-bottom: 5px; /* Espacio entre el botón Siguiente y los controles */
   }
   #puzzleWrapper {
     width: 99vw;
     max-width: 1000px;
-    height: calc(100vh - 50px); /* Aumentado de 80px a 50px para más altura del puzzle */
+    height: calc(100vh - 50px); /* Ajustado para dar más altura al puzzle en portrait */
     background: #ddd;
     position: relative;
-    border: 5px solid #333;
+    border: 5px solid #333; /* <-- CORREGIDO: Borde negro de 5px */
     overflow: hidden;
     touch-action: none;
     flex-grow: 1;
@@ -107,9 +106,9 @@
       max-width: none;
       justify-content: center; /* Centra los controles */
     }
-    #leftControls {
-        justify-content: center; /* Asegura el centrado en landscape */
-    }
+    #leftControls {
+        justify-content: center; /* Asegura el centrado en landscape */
+    }
     #puzzleWrapper {
       width: calc(100vw - 20px);
       height: calc(100vh - 40px); /* Mantiene un espacio mínimo para la barra superior */
@@ -344,7 +343,7 @@ function startTimer() {
 function updateTimerDisplay() {
   const m = Math.floor(timeLeft / 60);
   const s = timeLeft % 60;
-  timerDisplay.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+  timerDisplay.textContent = `<span class="math-inline">\{m\.toString\(\)\.padStart\(2,'0'\)\}\:</span>{s.toString().padStart(2,'0')}`;
 }
 
 function endPuzzle(success) {
@@ -459,7 +458,7 @@ function runConfetti() {
   function loop(timestamp) {
     if (!startTime) startTime = timestamp;
     let elapsed = timestamp - startTime;
-    effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+    effectCtx.clearRect(0, 0, effectCanvas.width, effectCtx.height); /* Corregir aquí effectCtx.height */
 
     if (elapsed < duration) {
       confettiPieces.forEach(p => {
