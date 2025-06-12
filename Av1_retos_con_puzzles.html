@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>Retos Aventura 1</title>
 <style>
     body {
@@ -11,6 +11,12 @@
         background: #fff;
         color: #222;
         font-size: 16px; /* Asegura un tamaño base para 'em' */
+        overflow: hidden; /* ¡Importante! Elimina el scroll global */
+        display: flex; /* Para centrar el contenido principal */
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        height: 100vh; /* Asegura que el body ocupe toda la altura de la ventana */
     }
     h2 { /* Este es el título visible en la página */
         margin-bottom: 0.8em;
@@ -25,6 +31,13 @@
         margin-bottom: 1em;
         position: relative;
         min-height: 220px;
+        flex-grow: 1; /* Permite que el contenedor del reto ocupe el espacio disponible */
+        display: flex; /* Para alinear el contenido del reto */
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        width: 100%; /* Ajustar el ancho del reto */
+        max-width: 800px; /* Limitar el ancho en pantallas grandes */
     }
     .respuesta {
         margin: 0.4em 0;
@@ -57,38 +70,39 @@
         margin-top: 1em;
         justify-content: center; /* Centra los botones horizontalmente */
         align-items: center; /* Alinea verticalmente los botones si tienen alturas diferentes */
+        width: 100%;
+        max-width: 800px; /* Limitar el ancho en pantallas grandes */
     }
 
     button.btn, button#btnMostrarRespuesta, button#btnNextAfterReto {
         padding: 0.6em 1.2em;
         font-size: 1.1em;
-        border: none; /* Se quita el borde de 2px para mantener el estilo del primer código */
+        border: none;
         border-radius: 6px;
         cursor: pointer;
         background-color: #0077cc;
         color: white;
         user-select: none;
-        transition: background-color 0.3s ease; /* Transición para hover */
+        transition: background-color 0.3s ease;
     }
     button.btn:hover, button#btnNextAfterReto:hover {
-        background-color: #005699; /* Oscurecer al pasar el ratón */
+        background-color: #005699;
     }
     button.btn:disabled {
         background-color: #999;
         cursor: not-allowed;
     }
     #btnMostrarRespuesta {
-        background-color: #28a745; /* Color del primer código */
+        background-color: #28a745;
         display: none; /* Por defecto oculto, su visibilidad se controla con JS */
     }
     #btnMostrarRespuesta:hover {
-        background-color: #1e7e34; /* Oscurecer al pasar el ratón */
+        background-color: #1e7e34;
     }
     #btnNextAfterReto {
-        background-color: #0077cc; /* Usa el color original del botón para ser coherente */
+        background-color: #0077cc;
         display: none; /* Por defecto oculto, su visibilidad se controla con JS */
     }
-
 
     #respuestaCorrectaTexto {
         margin-top: 1em;
@@ -130,24 +144,26 @@
     /* Estilos específicos para el iframe del puzzle */
     #puzzleIframe {
         width: 100%;
-        height: calc(100vh - 150px); /* Ajusta la altura para que ocupe más espacio en móviles */
-        border: 1px solid #ddd;
+        height: calc(100vh - 170px); /* Ajusta la altura para que ocupe más espacio en móviles */
+        border: none; /* Quitamos el borde para que el puzzle maneje su propio borde */
         border-radius: 8px;
         display: block;
-        margin: 1em auto;
+        margin: 0.5em auto; /* Márgenes más pequeños alrededor del iframe */
+        flex-grow: 1; /* Permite que el iframe crezca y ocupe el espacio */
     }
 
     /* Media Query para móviles en horizontal: oculta el h2 y ajusta el espacio */
-    @media (max-width: 800px) and (orientation: landscape) {
+    @media (orientation: landscape) {
         h2 {
             display: none; /* Oculta el título "Reto Valencia be Guides" */
         }
         body {
-            margin: 0.5em; /* Reduce los márgenes del body para ganar espacio */
+            margin: 0.2em; /* Reduce los márgenes del body para ganar espacio */
         }
         #reto {
-            min-height: 180px; /* Ajusta la altura mínima del reto */
-            padding: 0.8em; /* Reduce el padding del reto */
+            min-height: unset; /* Permitir que la altura se ajuste al contenido, especialmente al iframe */
+            padding: 0.5em; /* Reduce el padding del reto */
+            justify-content: center; /* Centrar verticalmente en landscape si el contenido no llena */
         }
         button.btn, button#btnMostrarRespuesta, button#btnNextAfterReto {
             font-size: 1em; /* Reduce el tamaño de fuente de los botones */
@@ -160,7 +176,9 @@
             transform: scale(1.1); /* Reduce un poco el tamaño de los radios/checkboxes */
         }
         #puzzleIframe {
-            height: calc(100vh - 120px); /* Ajusta la altura del iframe en landscape para dejar espacio */
+            height: calc(100vh - 30px); /* Ajusta la altura del iframe en landscape para dejar espacio MÍNIMO */
+            width: calc(100vw - 10px); /* Ajusta el ancho para quitar el scroll horizontal */
+            max-width: none; /* Asegura que no haya límite de ancho en landscape */
         }
     }
 
@@ -168,14 +186,14 @@
     @media (min-width: 801px) or (orientation: portrait) {
         #puzzleIframe {
             max-width: 800px; /* Limita el ancho en pantallas grandes */
-            height: 600px; /* Altura fija para pantallas más grandes */
+            height: calc(100vh - 170px); /* Altura dinámica para pantallas más grandes y portrait */
         }
     }
 </style>
 </head>
 <body>
 
-<h2></h2>
+<h2>Retos Aventura 1</h2>
 <div id="reto" tabindex="0"></div>
 
 <div id="button-container">
@@ -425,11 +443,14 @@ function mostrarReto() {
     retoDiv.innerHTML = "";
     retoDiv.setAttribute("tabindex", "0");
 
-    let preguntaElem = document.createElement("h3");
-    preguntaElem.textContent = `${reto.pregunta}`;
-    retoDiv.appendChild(preguntaElem);
+    // Actualizar el título de la página principal con el número y pregunta del reto
+    document.querySelector('h2').textContent = `Reto ${reto.pregunta}`;
 
     if (reto.tipo === "opcion" || reto.tipo === "opcion-multiple") {
+        let preguntaElem = document.createElement("h3");
+        preguntaElem.textContent = `${reto.pregunta}`;
+        retoDiv.appendChild(preguntaElem);
+
         const inputType = reto.multiple ? "checkbox" : "radio";
         reto.opciones.forEach((opcion, i) => {
             const divOpcion = document.createElement("div");
@@ -451,6 +472,10 @@ function mostrarReto() {
         btnEnviar.style.display = "inline-block";
         btnEnviar.disabled = false;
     } else if (reto.tipo === "texto") {
+        let preguntaElem = document.createElement("h3");
+        preguntaElem.textContent = `${reto.pregunta}`;
+        retoDiv.appendChild(preguntaElem);
+
         const inputTexto = document.createElement("input");
         inputTexto.type = "text";
         inputTexto.id = "respuestaTexto";
@@ -466,18 +491,17 @@ function mostrarReto() {
         btnEnviar.disabled = false;
         setTimeout(() => inputTexto.focus(), 200);
     } else if (reto.tipo === "puzzle") {
+        // Para puzzles, ocultamos los botones de la página principal
+        btnEnviar.style.display = "none";
+        btnMostrarRespuesta.style.display = "none";
+        btnNext.style.display = "none"; // Asegurarse de que el botón "Siguiente" de la página principal esté oculto
+
         const puzzleIframe = document.createElement("iframe");
         puzzleIframe.id = "puzzleIframe";
         puzzleIframe.src = reto.puzzleSrc;
         puzzleIframe.frameBorder = "0";
         puzzleIframe.allowFullscreen = true;
         retoDiv.appendChild(puzzleIframe);
-
-        // Ocultamos btnEnviar, btnMostrarRespuesta y btnNext para los puzzles
-        // El avance lo gestiona el puzzle directamente al hacer clic en su botón "Continuar"
-        btnEnviar.style.display = "none";
-        btnMostrarRespuesta.style.display = "none";
-        btnNext.style.display = "none"; // Asegurarse de que el botón "Siguiente" de la página principal esté oculto inicialmente para puzzles
     }
 }
 
@@ -576,9 +600,16 @@ function verificar() {
         }
         esCorrecto = reto.correctas.every(c => checks.includes(c)) && checks.every(s => reto.correctas.includes(s));
     } else if (reto.tipo === "texto") {
-        // Para retos de texto, la lógica actual simplemente los marca como correctos.
-        // Si necesitas verificación de texto, se debe añadir aquí.
-        esCorrecto = true;
+        const respuestaUsuario = document.getElementById("respuestaTexto").value.trim();
+        // Normaliza las respuestas (minúsculas, sin acentos para una comparación más flexible)
+        const normalizar = (str) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+        if (reto.correctaTexto === "?") {
+            // Si la respuesta esperada es '?', acepta cualquier texto no vacío
+            esCorrecto = respuestaUsuario.length > 0;
+        } else {
+            esCorrecto = normalizar(respuestaUsuario) === normalizar(reto.correctaTexto);
+        }
     }
 
     if (esCorrecto) {
@@ -598,7 +629,7 @@ function verificar() {
         divRespuestaCorrecta.style.display = "block"; // Mostrar el mensaje
         btnEnviar.disabled = false;
         setTimeout(() => {
-            divRespuestaCorrecta.style.display = "none"; // Ocultar el mensaje después de un tiempo
+            divRespuestaCorrecta.style.display = "none"; // Ocultar el mensaje después de 2 segundos
         }, 2000); // Ocultar mensaje de incorrecto después de 2 segundos
     }
 }
@@ -616,7 +647,7 @@ btnMostrarRespuesta.addEventListener("click", () => {
     divRespuestaCorrecta.style.display = "block"; // Asegurar que se muestre
 });
 
-/* Botón siguiente (solo para retos de opción/texto) */
+/* Botón siguiente (solo para retos de opción/texto Y para puzzles una vez el puzzle envía el mensaje) */
 btnNext.addEventListener("click", () => {
     indiceReto++;
     if (indiceReto >= retos.length) {
@@ -634,6 +665,9 @@ window.addEventListener("message", (event) => {
     // Opcional: Puedes añadir una verificación de origen si tus puzzles se alojan en un dominio diferente
     // if (event.origin !== "https://valenciavguides.github.io") return;
 
+    const currentReto = retos[indiceReto];
+    if (currentReto.tipo !== "puzzle") return; // Solo procesar mensajes si el reto actual es un puzzle
+
     // Mensaje del puzzle para que la página principal reaccione con el borde de éxito
     if (event.data === "puzzle-state-completed") {
         console.log('Mensaje recibido: Puzzle completado. Poniendo borde verde y mostrando mensaje.');
@@ -641,8 +675,8 @@ window.addEventListener("message", (event) => {
         retoDiv.classList.remove("incorrect"); // Asegurarse de quitar el borde rojo si estaba
         divRespuestaCorrecta.textContent = "🎉 ¡Puzzle Resuelto con Éxito!"; // Mensaje
         divRespuestaCorrecta.style.display = "block"; // Mostrar mensaje
-        // NO AVANZAR AUTOMÁTICAMENTE, en su lugar, mostrar el botón "Siguiente" principal
-        btnNext.style.display = "inline-block";
+        // NO mostramos el botón "Siguiente" de la página principal aquí.
+        // Se mostrará solo cuando el botón "Siguiente" dentro del puzzle sea pulsado.
     }
     // Mensaje del puzzle para que la página principal reaccione con el borde de fallo por tiempo
     else if (event.data === "puzzle-state-timeout") {
@@ -652,18 +686,18 @@ window.addEventListener("message", (event) => {
         vibrar(); // Vibración al agotar el tiempo
         divRespuestaCorrecta.textContent = "⏰ Tiempo agotado. Gracias por participar."; // Mensaje
         divRespuestaCorrecta.style.display = "block"; // Mostrar mensaje
-        // NO AVANZAR AUTOMÁTICAMENTE, en su lugar, mostrar el botón "Siguiente" principal
-        btnNext.style.display = "inline-block";
+        // NO mostramos el botón "Siguiente" de la página principal aquí.
+        // Se mostrará solo cuando el botón "Siguiente" dentro del puzzle sea pulsado.
     }
-    // Esta es la señal para que la página principal active el botón "Siguiente",
-    // NO PARA AVANZAR directamente. Se activa cuando el usuario hace clic en el
-    // botón "Continuar" dentro del puzzle (si lo implementas allí).
+    // Esta es la señal para que la página principal AVANCE
     else if (event.data === "advance-to-next") {
         console.log('Mensaje recibido: Solicitud de avance recibida desde el puzzle.');
         divRespuestaCorrecta.style.display = "none"; // Ocultar cualquier mensaje previo
-        btnNext.style.display = "inline-block"; // Mostrar el botón "Siguiente" principal
+        // Llamar a la función de avance del padre
+        btnNext.click(); // Simula el click en el botón "Siguiente" del padre
     }
 });
+
 
 /* Mostrar primer reto al cargar */
 mostrarReto();
