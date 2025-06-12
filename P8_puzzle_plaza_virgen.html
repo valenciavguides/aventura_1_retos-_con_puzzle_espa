@@ -14,18 +14,19 @@
   }
   h1 {
     font-size: 1.2em;
-    margin: 8px;
+    margin: 0 8px 8px 8px; /* Ajustado: Sin margen superior, 8px abajo y laterales */
     text-align: center;
   }
   #topBar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 10px;
-    width: 95vw;
+    margin-bottom: 5px; /* Reducido para ganar espacio */
+    width: 98vw; /* Más ancho para ocupar más pantalla */
     max-width: 1000px;
     gap: 10px;
     flex-wrap: nowrap;
+    padding: 5px 0; /* Un poco de padding vertical */
   }
   #leftControls {
     display: flex;
@@ -33,9 +34,11 @@
     align-items: center;
     flex-shrink: 1;
     min-width: 0;
+    flex-grow: 1;
+    justify-content: flex-start;
   }
-  #restartBtn, #pauseBtn {
-    padding: 6px 14px;
+  #restartBtn, #pauseBtn, #continueBtn { /* Estilos comunes para los botones */
+    padding: 6px 12px;
     background: white;
     color: black;
     border: 2px solid black;
@@ -52,26 +55,20 @@
     white-space: nowrap;
   }
   #continueBtn {
-    padding: 6px 14px;
-    background: white;
-    color: black;
-    border: 2px solid black;
-    border-radius: 8px;
-    font-size: 0.9em;
-    cursor: pointer;
-    white-space: nowrap;
-    flex-shrink: 0;
-    display: none; /* Este botón ahora lo controlará el iframe principal */
+    display: none; /* Oculto por defecto, visible solo al finalizar */
   }
   #puzzleWrapper {
-    width: 95vw;
-    max-width: 1000px;
-    aspect-ratio: 3 / 2;
+    width: 98vw; /* Ocupa casi todo el ancho */
+    max-width: 1000px; /* Mantiene un límite razonable en pantallas muy grandes */
+    height: auto; /* La altura se ajustará dinámicamente */
+    max-height: calc(100vh - 100px); /* Ajustado: Max altura para evitar scroll, considerando h1 y topBar */
+    aspect-ratio: 3 / 2; /* Mantiene la relación de aspecto principal, pero se permitirá distorsión si es necesario */
     background: #ddd;
     position: relative;
     border: 5px solid #333;
     overflow: hidden;
-    touch-action: none; /* Previene el "pull-to-refresh" */
+    touch-action: none; /* Previene el "pull-to-refresh" y overscroll */
+    flex-grow: 1; /* Permite que el wrapper crezca y ocupe espacio vertical */
   }
   canvas {
     width: 100%; height: 100%; display: block;
@@ -92,32 +89,36 @@
   }
   @media (orientation: landscape) {
     h1 {
-      display: none;
+      display: none; /* Oculta el título en orientación horizontal */
     }
     #puzzleWrapper {
-      aspect-ratio: 16 / 9;
+      width: auto; /* Deja que la altura determine el ancho */
+      height: calc(100vh - 40px); /* Ajustado: Mayor altura en landscape, menos espacio para topBar */
+      max-width: 98vw; /* Limita el ancho en landscape */
+      aspect-ratio: 16 / 9; /* Relación de aspecto para landscape */
     }
     #topBar {
-      width: 100vw;
-      padding: 0 10px;
+      width: 98vw; /* Mantiene el ancho consistente */
+      max-width: 1000px;
+      margin-bottom: 5px; /* Margen consistente */
     }
   }
   @media (max-width: 768px) and (orientation: portrait) {
     #puzzleWrapper {
-      /* Ajuste dinámico de altura en JS para un mejor fit */
-      /* height: 600px; */ 
+      height: auto;
+      max-height: calc(100vh - 100px); /* Asegura que quepa verticalmente en móviles portrait */
     }
   }
 </style>
 </head>
 <body>
 
-<div id="topBar">
+<h1>8. Plaza de la Virgen</h1> <div id="topBar">
   <div id="leftControls">
     <button id="restartBtn">🔄 Reiniciar</button>
     <button id="pauseBtn">⏸️ Pausa</button>
     <span id="timer">03:00</span>
-  </div>
+    <button id="continueBtn">Siguiente</button> </div>
 </div>
 <div id="puzzleWrapper">
   <canvas id="puzzleCanvas"></canvas>
@@ -140,6 +141,7 @@ const messageText = document.getElementById("messageText");
 const restartBtn = document.getElementById("restartBtn");
 const pauseBtn = document.getElementById("pauseBtn");
 const timerDisplay = document.getElementById("timer");
+const continueBtn = document.getElementById("continueBtn"); // Obtener referencia al botón "Siguiente"
 const puzzleWrapper = document.getElementById("puzzleWrapper");
 const placeSound = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg");
 const failSound = new Audio("https://actions.google.com/sounds/v1/cartoon/concussive_hit_guitar_boing.ogg");
@@ -162,11 +164,9 @@ img.onload = () => { init(); };
 img.src = imageSrc;
 
 window.addEventListener("resize", () => {
-    // Retrasar la ejecución para asegurar que los nuevos tamaños del DOM estén calculados
     setTimeout(resizePieces, 100); 
 });
 window.addEventListener("orientationchange", () => {
-    // También retrasar en cambios de orientación
     setTimeout(resizePieces, 300);
 });
 
@@ -174,7 +174,6 @@ function resizePieces() {
   const w = puzzleWrapper.clientWidth;
   const h = puzzleWrapper.clientHeight;
 
-  // Ajustar el canvas a las nuevas dimensiones del wrapper
   canvas.width = w;
   canvas.height = h;
   effectCanvas.width = w;
@@ -184,24 +183,19 @@ function resizePieces() {
   const ph = h / rows;
 
   pieces.forEach(p => {
-    const colIndex = Math.round(p.correctX / p.w); // Usar p.w original antes de actualizar para índice
-    const rowIndex = Math.round(p.correctY / p.h); // Usar p.h original antes de actualizar para índice
+    const colIndex = Math.round(p.correctX / p.w);
+    const rowIndex = Math.round(p.correctY / p.h);
     
-    // Actualizar el tamaño de la pieza
     p.w = pw;
     p.h = ph;
     
-    // Actualizar la posición correcta
     p.correctX = colIndex * pw;
     p.correctY = rowIndex * ph;
 
     if (p.placed) {
-      // Si la pieza ya está colocada, moverla a su nueva posición correcta
       p.x = p.correctX;
       p.y = p.correctY;
     } else {
-      // Si la pieza no está colocada, ajustar su posición para que no se salga de los límites
-      // y mantener su posición relativa si es posible, o reubicarla aleatoriamente si es necesario
       p.x = Math.min(Math.max(p.x, 0), w - pw);
       p.y = Math.min(Math.max(p.y, 0), h - ph);
     }
@@ -219,13 +213,13 @@ function init() {
   pieces = []; placedCount = 0;
   completeMsg.style.display = "none";
   puzzleWrapper.style.borderColor = "#333";
+  continueBtn.style.display = 'none'; // Ocultar el botón al iniciar/reiniciar
 
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       pieces.push({
         sx: c * img.width / cols, sy: r * img.height / rows,
         sw: img.width / cols, sh: img.height / rows,
-        // Generar posiciones iniciales aleatorias dentro de los límites del puzzleWrapper
         x: Math.random() * (w - pw), y: Math.random() * (h - ph),
         w: pw, h: ph, correctX: c * pw, correctY: r * ph,
         placed: false, scale: 1
@@ -241,7 +235,6 @@ function init() {
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  // Dibujar primero las piezas colocadas, luego las no colocadas para que se vean por encima
   for (const p of pieces.filter(p => p.placed)) drawPiece(p);
   for (const p of pieces.filter(p => !p.placed)) drawPiece(p);
   
@@ -265,30 +258,26 @@ function drawPiece(piece) {
   ctx.scale(piece.scale, piece.scale);
   ctx.translate(-piece.w / 2, -piece.h / 2);
   ctx.drawImage(img, piece.sx, piece.sy, piece.sw, piece.sh, 0, 0, piece.w, piece.h);
-  // Añadir borde de igual grosor
   ctx.strokeStyle = '#333'; 
-  ctx.lineWidth = 1; // Grosor del borde de 1px
+  ctx.lineWidth = 1; 
   ctx.strokeRect(0, 0, piece.w, piece.h);
   ctx.restore();
 }
 
 function onPointerDown(e) {
   if (puzzleEnded || paused) return;
-  // Prevenir el comportamiento por defecto (como pull-to-refresh en móviles)
   if (e.target === canvas) {
       e.preventDefault(); 
   }
   const rect = canvas.getBoundingClientRect();
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
-  // Iterar de atrás hacia adelante para seleccionar la pieza superior
   for (let i = pieces.length - 1; i >= 0; i--) {
     const p = pieces[i];
     if (!p.placed && x >= p.x && x <= p.x + p.w && y >= p.y && y <= p.y + p.h) {
       draggingPiece = p;
       offsetX = x - p.x;
       offsetY = y - p.y;
-      // Mover la pieza arrastrada al final del array para que se dibuje encima
       pieces.splice(i, 1);
       pieces.push(draggingPiece);
       break;
@@ -298,7 +287,6 @@ function onPointerDown(e) {
 
 function onPointerMove(e) {
   if (!draggingPiece || puzzleEnded || paused) return;
-  // Prevenir el comportamiento por defecto (como scroll)
   e.preventDefault(); 
   const rect = canvas.getBoundingClientRect();
   const x = e.clientX - rect.left;
@@ -319,7 +307,6 @@ function onPointerUp(e) {
     animatingPiece = draggingPiece;
     animFrame = 0; animDirection = 1; animScale = 1; 
   } 
-  // Eliminado: else { failSound.play(); } -> para quitar el sonido al colocar mal una pieza.
   draggingPiece = null;
   if (placedCount === pieces.length) {
     endPuzzle(true);
@@ -349,23 +336,21 @@ function endPuzzle(success) {
   puzzleEnded = true;
   clearInterval(timerInterval);
   completeMsg.style.display = "block";
+  continueBtn.style.display = 'inline-block'; // Mostrar el botón "Siguiente"
 
   if (success) {
     successSound.play();
     messageText.textContent = "🎉 ¡Puzzle completado!";
     puzzleWrapper.style.borderColor = "green";
     runFireworks(); 
-    // Envía mensaje a la página padre indicando que el puzzle se completó con éxito
     window.parent.postMessage("puzzle-state-completed", "*"); 
   } else {
     failSound.play();
     messageText.textContent = "⏰ Tiempo agotado. Gracias por participar."; 
     puzzleWrapper.style.borderColor = "red";
     runConfetti(); 
-    // Envía mensaje a la página padre indicando que el tiempo del puzzle se agotó
     window.parent.postMessage("puzzle-state-timeout", "*"); 
   }
-  // Siempre se envía el mensaje para avanzar al siguiente reto, independientemente del resultado del puzzle
   window.parent.postMessage('advance-to-next', '*');
 }
 
@@ -467,11 +452,10 @@ function runConfetti() {
         effectCtx.translate(p.x, p.y);
         effectCtx.rotate(p.tilt);
         effectCtx.fillStyle = p.color;
-        // Borde uniforme para las piezas de confeti
         effectCtx.strokeStyle = '#333'; 
         effectCtx.lineWidth = 1; 
         effectCtx.fillRect(-p.size/2, -p.size/4, p.size, p.size/2);
-        effectCtx.strokeRect(-p.size/2, -p.size/4, p.size, p.size/2); // Dibujar el borde
+        effectCtx.strokeRect(-p.size/2, -p.size/4, p.size, p.size/2);
         effectCtx.restore();
       });
       requestAnimationFrame(loop);
@@ -487,14 +471,13 @@ restartBtn.addEventListener("click", () => {
   puzzleEnded = false;
   completeMsg.style.display = "none";
   puzzleWrapper.style.borderColor = "#333";
-  init();
+  init(); // Reiniciar el puzzle y ocultar el botón "Siguiente"
 });
 pauseBtn.addEventListener("click", () => {
   paused = !paused;
   pauseBtn.textContent = paused ? "▶️ Continuar" : "⏸️ Pausa";
 });
 
-// Event listeners para los eventos de puntero
 canvas.addEventListener("pointerdown", onPointerDown);
 canvas.addEventListener("pointermove", onPointerMove);
 canvas.addEventListener("pointerup", onPointerUp);
