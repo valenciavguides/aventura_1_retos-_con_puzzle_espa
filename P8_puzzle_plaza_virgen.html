@@ -6,6 +6,550 @@
 
 <style>
     html, body {
+        margin: 0; padding: 0; height: 100%;
+        background: #f0f0f0;
+        font-family: sans-serif;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: flex-start;
+        overflow: hidden;
+    }
+    h1 {
+        font-size: 1.2em;
+        margin: 0;
+        padding: 5px 0;
+        text-align: center;
+        width: 99vw;
+        max-width: 1000px;
+        /* REGLA 3: Título más arriba - Eliminar margen superior del h1 si lo tiene.
+           El margin-top del body es lo que crea el espacio en blanco arriba.
+           Ya hemos puesto margin: 0; padding: 0; en html, body */
+        padding-top: 0; /* Asegurar que no haya padding aquí */
+        margin-top: 0;  /* Asegurar que no haya margen aquí */
+    }
+    #topBar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 0;
+        width: 99vw;
+        max-width: 1000px;
+        gap: 5px;
+        flex-wrap: nowrap;
+        padding: 5px 0;
+        position: relative;
+    }
+    #leftControls {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-shrink: 1;
+        min-width: 0;
+        flex-grow: 1;
+        justify-content: center;
+        width: 100%;
+    }
+    #restartBtn, #pauseBtn, #continueBtn {
+        padding: 6px 12px;
+        background: white;
+        color: black;
+        border: 2px solid black;
+        border-radius: 8px;
+        font-size: 0.9em;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    #timer {
+        font-size: 1em;
+        font-weight: bold;
+        min-width: 60px;
+        text-align: center;
+        white-space: nowrap;
+    }
+    #continueBtn {
+        display: none;
+        position: absolute;
+        bottom: 5px; /* Cubre timer y pausa desde abajo */
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        width: calc(100% - 20px);
+        max-width: 250px;
+    }
+    #puzzleWrapper {
+        width: 99vw;
+        max-width: 1000px;
+        background: #ddd;
+        position: relative;
+        border: 5px solid #333;
+        overflow: hidden;
+        touch-action: none;
+        flex-grow: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        /* REGLA 2: Cuadro negro más grande en vertical */
+        height: calc(100vh - 60px); /* Ajustado para ganar más altura en portrait, considerando h1 y topBar */
+        /* Aseguramos que la altura restante sea usada, restando la altura de h1 y topBar */
+    }
+    canvas {
+        width: 100%; height: 100%; display: block;
+        user-select: none;
+    }
+    #completeMsg {
+        display: none;
+        position: absolute;
+        top: 40%; left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255,255,255,0.95);
+        padding: 20px;
+        border: 2px solid #333;
+        border-radius: 12px;
+        text-align: center;
+        z-index: 10;
+        font-size: 1.2em;
+    }
+
+    /* REGLA 1: Título desaparece en horizontal */
+    @media (orientation: landscape) {
+        h1 {
+            display: none; /* Oculta el título en orientación horizontal */
+        }
+        #topBar {
+            flex-direction: row;
+            margin-bottom: 0;
+            padding: 0;
+            width: 100%;
+            max-width: none;
+            justify-content: space-between; /* Alinea elementos a los extremos */
+            height: 40px; /* Reducir altura de topBar en landscape para más espacio */
+        }
+        #leftControls {
+            justify-content: flex-end;
+            flex-grow: 1;
+            width: auto;
+            order: 2;
+        }
+        #restartBtn {
+            order: 1;
+        }
+        #continueBtn {
+            position: static;
+            transform: none;
+            order: 3;
+            margin-left: 10px;
+        }
+        #puzzleWrapper {
+            /* REGLA 2: Cuadro negro más grande en horizontal */
+            width: calc(100vw - 20px);
+            height: calc(100vh - 40px); /* Usar la altura restante después de la topBar reducida */
+            max-width: none;
+        }
+    }
+
+    @media (orientation: portrait) {
+        #topBar {
+            padding-bottom: 40px; /* Espacio para el botón Siguiente en portrait */
+        }
+        #restartBtn {
+            /* No se mueve, ya está bien posicionado */
+        }
+        #pauseBtn, #timer {
+            /* Estos serán cubiertos por #continueBtn en portrait */
+            opacity: 0.5; /* Opcional: Para indicar que están cubiertos */
+        }
+    }
+</style>
+</head>
+<body>
+
+<h1></h1>
+<div id="topBar">
+    <button id="continueBtn">Siguiente</button>      
+    <div id="leftControls">
+        <button id="restartBtn">🔄 Reiniciar</button>
+        <button id="pauseBtn">⏸️ Pausa</button>
+        <span id="timer">03:00</span>
+    </div>
+</div>
+<div id="puzzleWrapper">
+    <canvas id="puzzleCanvas"></canvas>
+    <div id="completeMsg">
+        <strong id="messageText"></strong><br />
+    </div>
+</div>
+<script>
+const canvas = document.getElementById("puzzleCanvas");
+const ctx = canvas.getContext("2d");
+const imageSrc = "imagenes_puzzles/P8_plaza_de_la_virgen.jpg";
+const rows = 3, cols = 4;
+let pieces = [], draggingPiece = null;
+let offsetX = 0, offsetY = 0, placedCount = 0;
+let img = new Image();
+let animatingPiece = null, animFrame = 0, animDirection = 1, animScale = 1;
+const completeMsg = document.getElementById("completeMsg");
+const messageText = document.getElementById("messageText");
+const restartBtn = document.getElementById("restartBtn");
+const pauseBtn = document.getElementById("pauseBtn");
+const timerDisplay = document.getElementById("timer");
+const continueBtn = document.getElementById("continueBtn");
+const puzzleWrapper = document.getElementById("puzzleWrapper");
+const placeSound = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg");
+const failSound = new Audio("https://actions.google.com/sounds/v1/cartoon/concussive_hit_guitar_boing.ogg");
+const successSound = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
+placeSound.volume = 0.3; failSound.volume = 0.4; successSound.volume = 0.5;
+let paused = false, timeLeft = 180, timerInterval;
+let puzzleEnded = false;
+
+const effectCanvas = document.createElement("canvas");
+const effectCtx = effectCanvas.getContext("2d");
+effectCanvas.style.position = "absolute";
+effectCanvas.style.top = "0";
+effectCanvas.style.left = "0";
+effectCanvas.style.pointerEvents = "none";
+effectCanvas.style.width = "100%";
+effectCanvas.style.height = "100%";
+puzzleWrapper.appendChild(effectCanvas);
+
+img.onload = () => { init(); };
+img.src = imageSrc;
+
+window.addEventListener("resize", () => {
+    setTimeout(resizePieces, 100);
+});
+window.addEventListener("orientationchange", () => {
+    setTimeout(resizePieces, 300);
+});
+
+function resizePieces() {
+    const w = puzzleWrapper.clientWidth;
+    const h = puzzleWrapper.clientHeight;
+
+    canvas.width = w;
+    canvas.height = h;
+    effectCanvas.width = w;
+    effectCanvas.height = h;
+
+    const pw = w / cols;
+    const ph = h / rows;
+
+    pieces.forEach(p => {
+        const colIndex = Math.round(p.correctX / (p.w || 1));
+        const rowIndex = Math.round(p.correctY / (p.h || 1));
+
+        p.w = pw;
+        p.h = ph;
+
+        p.correctX = colIndex * pw;
+        p.correctY = rowIndex * ph;
+
+        if (!p.placed) {
+            p.x = Math.min(Math.max(p.x, 0), w - pw);
+            p.y = Math.min(Math.max(p.y, 0), h - ph);
+        } else {
+            p.x = p.correctX;
+            p.y = p.correctY;
+        }
+    });
+    draw();
+}
+
+function init() {
+    puzzleEnded = false;
+    const w = puzzleWrapper.clientWidth, h = puzzleWrapper.clientHeight;
+    canvas.width = w; canvas.height = h;
+    effectCanvas.width = w; effectCanvas.height = h;
+    const pw = w / cols, ph = h / rows;
+
+    pieces = []; placedCount = 0;
+    completeMsg.style.display = "none";
+    puzzleWrapper.style.borderColor = "#333";
+    continueBtn.style.display = 'none';
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            pieces.push({
+                sx: c * img.width / cols, sy: r * img.height / rows,
+                sw: img.width / cols, sh: img.height / rows,
+                x: Math.random() * (w - pw), y: Math.random() * (h - ph),
+                w: pw, h: ph, correctX: c * pw, correctY: r * ph,
+                placed: false, scale: 1
+            });
+        }
+    }
+
+    timeLeft = 180;
+    updateTimerDisplay();
+    startTimer();
+    draw();
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const p of pieces.filter(p => p.placed)) drawPiece(p);
+    for (const p of pieces.filter(p => !p.placed)) drawPiece(p);
+
+    if (animatingPiece) {
+        animatingPiece.scale = animScale;
+        animFrame++;
+        animScale += 0.05 * animDirection;
+        if (animFrame >= 10) animDirection = -1;
+        if (animFrame >= 20) {
+            animatingPiece.scale = 1;
+            animatingPiece = null;
+            animFrame = 0; animDirection = 1;
+        }
+    }
+    requestAnimationFrame(draw);
+}
+
+function drawPiece(piece) {
+    ctx.save();
+    ctx.translate(piece.x + piece.w / 2, piece.y + piece.h / 2);
+    ctx.scale(piece.scale, piece.scale);
+    ctx.translate(-piece.w / 2, -piece.h / 2);
+    ctx.drawImage(img, piece.sx, piece.sy, piece.sw, piece.sh, 0, 0, piece.w, piece.h);
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0, 0, piece.w, piece.h);
+    ctx.restore();
+}
+
+function onPointerDown(e) {
+    if (puzzleEnded || paused) return;
+    if (e.target === canvas) {
+        e.preventDefault();
+    }
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    for (let i = pieces.length - 1; i >= 0; i--) {
+        const p = pieces[i];
+        if (!p.placed && x >= p.x && x <= p.x + p.w && y >= p.y && y <= p.y + p.h) {
+            draggingPiece = p;
+            offsetX = x - p.x;
+            offsetY = y - p.y;
+            pieces.splice(i, 1);
+            pieces.push(draggingPiece);
+            break;
+        }
+    }
+}
+
+function onPointerMove(e) {
+    if (!draggingPiece || puzzleEnded || paused) return;
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    draggingPiece.x = Math.min(Math.max(x - offsetX, 0), canvas.width - draggingPiece.w);
+    draggingPiece.y = Math.min(Math.max(y - offsetY, 0), canvas.height - draggingPiece.h);
+}
+
+function onPointerUp(e) {
+    if (!draggingPiece || puzzleEnded || paused) return;
+    if (Math.abs(draggingPiece.x - draggingPiece.correctX) < draggingPiece.w / 4 &&
+        Math.abs(draggingPiece.y - draggingPiece.correctY) < draggingPiece.h / 4) {
+        draggingPiece.x = draggingPiece.correctX;
+        draggingPiece.y = draggingPiece.correctY;
+        draggingPiece.placed = true;
+        placedCount++;
+        placeSound.play();
+        animatingPiece = draggingPiece;
+        animFrame = 0; animDirection = 1; animScale = 1;
+    }
+    draggingPiece = null;
+    if (placedCount === pieces.length) {
+        endPuzzle(true);
+    }
+}
+
+function startTimer() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        if (!paused && !puzzleEnded) {
+            timeLeft--;
+            updateTimerDisplay();
+            if (timeLeft <= 0) {
+                endPuzzle(false);
+            }
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const m = Math.floor(timeLeft / 60);
+    const s = timeLeft % 60;
+    timerDisplay.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+}
+
+function endPuzzle(success) {
+    puzzleEnded = true;
+    clearInterval(timerInterval);
+    completeMsg.style.display = "block";
+    continueBtn.style.display = 'inline-block';
+
+    if (success) {
+        successSound.play();
+        messageText.textContent = "🎉 ¡Puzzle completado!";
+        puzzleWrapper.style.borderColor = "green";
+        runFireworks();
+        window.parent.postMessage("puzzle-state-completed", "*");
+    } else {
+        failSound.play();
+        messageText.textContent = "⏰ Tiempo agotado. Gracias por participar.";
+        puzzleWrapper.style.borderColor = "red";
+        runConfetti();
+        window.parent.postMessage("puzzle-state-timeout", "*");
+    }
+}
+
+continueBtn.addEventListener('click', () => {
+    window.parent.postMessage('advance-to-next', '*');
+});
+
+function runFireworks() {
+    let duration = 5000;
+    let startTime = null;
+    const particles = [];
+    const colors = ["#ff2e2e","#ff7f50","#ffcc00","#3cff5f","#1e90ff","#9b30ff"];
+
+    effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+
+    function createParticle(x, y) {
+        return {
+            x, y,
+            vx: (Math.random() - 0.5) * 6,
+            vy: (Math.random() - 0.5) * 6,
+            life: 100,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            size: Math.random() * 3 + 2
+        };
+    }
+
+    function loop(timestamp) {
+        if (!startTime) startTime = timestamp;
+        let elapsed = timestamp - startTime;
+        effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+
+        if (elapsed < duration) {
+            if (particles.length < 100) {
+                let x = Math.random() * effectCanvas.width;
+                let y = Math.random() * effectCanvas.height / 2;
+                for(let i=0; i<5; i++) {
+                    particles.push(createParticle(x, y));
+                }
+            }
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.1;
+                p.life--;
+                if (p.life <= 0) particles.splice(i, 1);
+                else {
+                    effectCtx.beginPath();
+                    effectCtx.fillStyle = p.color;
+                    effectCtx.shadowColor = p.color;
+                    effectCtx.shadowBlur = 10;
+                    effectCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    effectCtx.fill();
+                    effectCtx.closePath();
+                }
+            }
+            requestAnimationFrame(loop);
+        } else {
+            effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+        }
+    }
+    requestAnimationFrame(loop);
+}
+
+function runConfetti() {
+    let duration = 5000;
+    let startTime = null;
+    const confettiPieces = [];
+    const colors = ["#ff0","#f0f","#0ff","#0f0","#00f","#f00"];
+
+    effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+
+    /* REGLA 4: Animación de confeti reducida a la mitad */
+    for(let i = 0; i < 75; i++) { /* REDUCIDO de 150 a 75 */
+        confettiPieces.push(createConfetti());
+    }
+
+    function createConfetti() {
+        return {
+            x: Math.random() * effectCanvas.width,
+            y: Math.random() * -20,
+            size: Math.random() * 8 + 8,
+            speedY: Math.random() * 3 + 2,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            tilt: Math.random() * 10 - 5,
+            tiltSpeed: Math.random() * 0.1 + 0.05
+        };
+    }
+
+    function loop(timestamp) {
+        if (!startTime) startTime = timestamp;
+        let elapsed = timestamp - startTime;
+        effectCtx.clearRect(0, 0, effectCanvas.width, effectCtx.height);
+
+        if (elapsed < duration) {
+            confettiPieces.forEach(p => {
+                p.y += p.speedY;
+                p.tilt += p.tiltSpeed;
+                if (p.y > effectCanvas.height) {
+                    p.x = Math.random() * effectCanvas.width;
+                    p.y = Math.random() * -20;
+                }
+                effectCtx.save();
+                effectCtx.translate(p.x, p.y);
+                effectCtx.rotate(p.tilt);
+                effectCtx.fillStyle = p.color;
+                effectCtx.strokeStyle = '#333';
+                effectCtx.lineWidth = 1;
+                effectCtx.fillRect(-p.size/2, -p.size/4, p.size, p.size/2);
+                effectCtx.strokeRect(-p.size/2, -p.size/4, p.size, p.size/2);
+                effectCtx.restore();
+            });
+            requestAnimationFrame(loop);
+        } else {
+            effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+        }
+    }
+    requestAnimationFrame(loop);
+}
+
+restartBtn.addEventListener("click", () => {
+    paused = false;
+    puzzleEnded = false;
+    completeMsg.style.display = "none";
+    puzzleWrapper.style.borderColor = "#333";
+    init();
+});
+pauseBtn.addEventListener("click", () => {
+    paused = !paused;
+    pauseBtn.textContent = paused ? "▶️ Continuar" : "⏸️ Pausa";
+});
+
+canvas.addEventListener("pointerdown", onPointerDown);
+canvas.addEventListener("pointermove", onPointerMove);
+canvas.addEventListener("pointerup", onPointerUp);
+canvas.addEventListener("pointercancel", onPointerUp);
+canvas.addEventListener("pointerout", onPointerUp);
+canvas.addEventListener("pointerleave", onPointerUp);
+
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+
+<style>
+    html, body {
         margin: 0; padding: 0; height: 100%; /* Asegura que html y body ocupen toda la altura */
         background: #f0f0f0;
         font-family: sans-serif;
