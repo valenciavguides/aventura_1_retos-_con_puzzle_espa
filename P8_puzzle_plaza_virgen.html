@@ -11,7 +11,7 @@
     display: flex; flex-direction: column;
     align-items: center; justify-content: flex-start;
     /* Eliminar scroll general si aparece de otras causas, aunque el puzzle lo evitará */
-    overflow: hidden; 
+    overflow: hidden;
   }
   h1 {
     font-size: 1.2em;
@@ -116,12 +116,14 @@
 </head>
 <body>
 
-<h1>8. Plaza de la Virgen</h1> <div id="topBar">
+<h1>8. Plaza de la Virgen</h1>
+<div id="topBar">
   <div id="leftControls">
     <button id="restartBtn">🔄 Reiniciar</button>
     <button id="pauseBtn">⏸️ Pausa</button>
     <span id="timer">03:00</span>
-    <button id="continueBtn">Siguiente</button> </div>
+    <button id="continueBtn">Siguiente</button>
+  </div>
 </div>
 <div id="puzzleWrapper">
   <canvas id="puzzleCanvas"></canvas>
@@ -168,7 +170,7 @@ img.src = imageSrc;
 
 window.addEventListener("resize", () => {
     // Retraso para asegurar que las dimensiones de puzzleWrapper se han actualizado
-    setTimeout(resizePieces, 100); 
+    setTimeout(resizePieces, 100);
 });
 window.addEventListener("orientationchange", () => {
     // Retraso para asegurar que las dimensiones de puzzleWrapper se han actualizado
@@ -191,10 +193,10 @@ function resizePieces() {
     // Calculamos la posición correcta basada en el nuevo tamaño del puzzleWrapper
     const colIndex = Math.round(p.correctX / (p.w || 1)); // Evitar división por cero
     const rowIndex = Math.round(p.correctY / (p.h || 1));
-    
+
     p.w = pw;
     p.h = ph;
-    
+
     p.correctX = colIndex * pw;
     p.correctY = rowIndex * ph;
 
@@ -246,9 +248,9 @@ function draw() {
   // Dibujar piezas colocadas primero, luego las no colocadas para que se vean por encima
   for (const p of pieces.filter(p => p.placed)) drawPiece(p);
   for (const p of pieces.filter(p => !p.placed)) drawPiece(p);
-  
+
   if (animatingPiece) {
-    animatingPiece.scale = animScale; 
+    animatingPiece.scale = animScale;
     animFrame++;
     animScale += 0.05 * animDirection;
     if (animFrame >= 10) animDirection = -1;
@@ -267,7 +269,7 @@ function drawPiece(piece) {
   ctx.scale(piece.scale, piece.scale);
   ctx.translate(-piece.w / 2, -piece.h / 2);
   ctx.drawImage(img, piece.sx, piece.sy, piece.sw, piece.sh, 0, 0, piece.w, piece.h);
-  ctx.strokeStyle = '#333'; 
+  ctx.strokeStyle = '#333';
   ctx.lineWidth = 1; /* Bordes de igual grosor */
   ctx.strokeRect(0, 0, piece.w, piece.h);
   ctx.restore();
@@ -276,7 +278,7 @@ function drawPiece(piece) {
 function onPointerDown(e) {
   if (puzzleEnded || paused) return;
   if (e.target === canvas) {
-      e.preventDefault(); 
+      e.preventDefault();
   }
   const rect = canvas.getBoundingClientRect();
   const x = e.clientX - rect.left;
@@ -296,7 +298,7 @@ function onPointerDown(e) {
 
 function onPointerMove(e) {
   if (!draggingPiece || puzzleEnded || paused) return;
-  e.preventDefault(); 
+  e.preventDefault();
   const rect = canvas.getBoundingClientRect();
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
@@ -315,8 +317,8 @@ function onPointerUp(e) {
     placedCount++;
     placeSound.play();
     animatingPiece = draggingPiece; // Activar animación de pieza
-    animFrame = 0; animDirection = 1; animScale = 1; 
-  } 
+    animFrame = 0; animDirection = 1; animScale = 1;
+  }
   draggingPiece = null;
   if (placedCount === pieces.length) {
     endPuzzle(true);
@@ -352,13 +354,13 @@ function endPuzzle(success) {
     successSound.play();
     messageText.textContent = "🎉 ¡Puzzle completado!";
     puzzleWrapper.style.borderColor = "green";
-    runFireworks(); 
+    runFireworks();
     window.parent.postMessage("puzzle-state-completed", "*"); // Mensaje al padre
   } else {
     failSound.play();
-    messageText.textContent = "⏰ Tiempo agotado. Gracias por participar."; 
+    messageText.textContent = "⏰ Tiempo agotado. Gracias por participar.";
     puzzleWrapper.style.borderColor = "red";
-    runConfetti(); 
+    runConfetti();
     window.parent.postMessage("puzzle-state-timeout", "*"); // Mensaje al padre
   }
   // Se elimina window.parent.postMessage('advance-to-next', '*'); de aquí
@@ -468,8 +470,8 @@ function runConfetti() {
         effectCtx.translate(p.x, p.y);
         effectCtx.rotate(p.tilt);
         effectCtx.fillStyle = p.color;
-        ctx.strokeStyle = '#333'; 
-        ctx.lineWidth = 1; 
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
         effectCtx.fillRect(-p.size/2, -p.size/4, p.size, p.size/2);
         effectCtx.strokeRect(-p.size/2, -p.size/4, p.size, p.size/2);
         effectCtx.restore();
