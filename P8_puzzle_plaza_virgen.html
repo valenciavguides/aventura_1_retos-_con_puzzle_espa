@@ -11,7 +11,7 @@
         font-family: sans-serif;
         display: flex; flex-direction: column;
         align-items: center; justify-content: flex-start;
-        overflow: hidden;
+        overflow: hidden; /* Asegura que no haya scroll */
     }
     h1 {
         font-size: 1.2em;
@@ -20,15 +20,12 @@
         text-align: center;
         width: 99vw;
         max-width: 1000px;
-        /* REGLA 3: Título más arriba - Eliminar margen superior del h1 si lo tiene.
-           El margin-top del body es lo que crea el espacio en blanco arriba.
-           Ya hemos puesto margin: 0; padding: 0; en html, body */
-        padding-top: 0; /* Asegurar que no haya padding aquí */
-        margin-top: 0;  /* Asegurar que no haya margen aquí */
+        padding-top: 0;
+        margin-top: 0;
     }
     #topBar {
         display: flex;
-        flex-direction: column;
+        flex-direction: column; /* Por defecto: columna en portrait */
         align-items: center;
         margin-bottom: 0;
         width: 99vw;
@@ -36,7 +33,7 @@
         gap: 5px;
         flex-wrap: nowrap;
         padding: 5px 0;
-        position: relative;
+        position: relative; /* Esencial para el posicionamiento absoluto del continueBtn */
     }
     #leftControls {
         display: flex;
@@ -45,7 +42,7 @@
         flex-shrink: 1;
         min-width: 0;
         flex-grow: 1;
-        justify-content: center;
+        justify-content: center; /* Centra los controles en esta vista */
         width: 100%;
     }
     #restartBtn, #pauseBtn, #continueBtn {
@@ -66,14 +63,17 @@
         white-space: nowrap;
     }
     #continueBtn {
-        display: none;
-        position: absolute;
-        bottom: 5px; /* Cubre timer y pausa desde abajo */
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 10;
-        width: calc(100% - 20px);
-        max-width: 250px;
+        display: none; /* Oculto por defecto */
+        /* REGLA 2: Posicionamiento para cubrir timer/pausa, dejando reiniciar libre, y más pequeño */
+        position: absolute; /* Posicionado relativo a #topBar */
+        right: 10px; /* Alinea a la derecha, para cubrir timer/pausa */
+        top: 50%; /* Centra verticalmente en topBar */
+        transform: translateY(-50%); /* Ajuste para centrado vertical real */
+        z-index: 10; /* Asegura que esté en la parte superior */
+        padding: 6px 10px; /* Más pequeño: padding reducido */
+        font-size: 1em; /* Tamaño de fuente ligeramente menor */
+        min-width: 100px; /* Asegurar que no sea demasiado pequeño */
+        text-align: center;
     }
     #puzzleWrapper {
         width: 99vw;
@@ -88,9 +88,9 @@
         justify-content: center;
         align-items: center;
 
-        /* REGLA 2: Cuadro negro más grande en vertical */
-        height: calc(100vh - 60px); /* Ajustado para ganar más altura en portrait, considerando h1 y topBar */
-        /* Aseguramos que la altura restante sea usada, restando la altura de h1 y topBar */
+        /* REGLA 1: Cuadro negro más grande en vertical (portrait) */
+        /* Estimación: h1 ~30px, topBar ~40px. Total a restar: 70px */
+        height: calc(100vh - 70px);
     }
     canvas {
         width: 100%; height: 100%; display: block;
@@ -110,7 +110,7 @@
         font-size: 1.2em;
     }
 
-    /* REGLA 1: Título desaparece en horizontal */
+    /* REGLA 1: Título desaparece y espacio optimizado en horizontal (landscape) */
     @media (orientation: landscape) {
         h1 {
             display: none; /* Oculta el título en orientación horizontal */
@@ -121,43 +121,41 @@
             padding: 0;
             width: 100%;
             max-width: none;
-            justify-content: space-between; /* Alinea elementos a los extremos */
-            height: 40px; /* Reducir altura de topBar en landscape para más espacio */
+            justify-content: center; /* Centra los controles en landscape */
+            height: 40px; /* Altura reducida de topBar en landscape para más espacio */
         }
         #leftControls {
-            justify-content: flex-end;
-            flex-grow: 1;
+            justify-content: center;
+            flex-grow: 0; /* No crecer, mantener ajuste */
             width: auto;
-            order: 2;
+            order: 2; /* Posición en el medio de la barra superior */
         }
         #restartBtn {
             order: 1;
         }
         #continueBtn {
-            position: static;
+            position: static; /* Vuelve a posición normal en el flujo */
             transform: none;
-            order: 3;
-            margin-left: 10px;
+            order: 3; /* Posiciona después de los controles */
+            margin-left: 10px; /* Espacio desde los controles */
+            font-size: 1em; /* Consistente con el tamaño más pequeño */
+            padding: 6px 10px; /* Consistente con el tamaño más pequeño */
+            min-width: auto;
         }
         #puzzleWrapper {
-            /* REGLA 2: Cuadro negro más grande en horizontal */
-            width: calc(100vw - 20px);
-            height: calc(100vh - 40px); /* Usar la altura restante después de la topBar reducida */
+            /* REGLA 1: Cuadro negro más grande en horizontal */
+            width: calc(100vw - 20px); /* Deja un pequeño margen lateral */
+            height: calc(100vh - 40px); /* Usa la altura restante después de la topBar reducida */
             max-width: none;
         }
     }
 
     @media (orientation: portrait) {
-        #topBar {
-            padding-bottom: 40px; /* Espacio para el botón Siguiente en portrait */
-        }
-        #restartBtn {
-            /* No se mueve, ya está bien posicionado */
-        }
-        #pauseBtn, #timer {
-            /* Estos serán cubiertos por #continueBtn en portrait */
-            opacity: 0.5; /* Opcional: Para indicar que están cubiertos */
-        }
+        /* No se necesita padding-bottom en topBar ya que continueBtn es absoluto */
+        /* Eliminamos la opacidad que no se pidió explícitamente para no distraer */
+        /* #pauseBtn, #timer {
+            opacity: 0.5;
+        } */
     }
 </style>
 </head>
@@ -234,8 +232,12 @@ function resizePieces() {
     const ph = h / rows;
 
     pieces.forEach(p => {
-        const colIndex = Math.round(p.correctX / (p.w || 1));
-        const rowIndex = Math.round(p.correctY / (p.h || 1));
+        // Asegúrate de que correctX/Y se basen en las dimensiones originales de la imagen antes de aplicar nuevas w/h
+        const originalPieceWidth = img.width / cols;
+        const originalPieceHeight = img.height / rows;
+        
+        const colIndex = Math.round(p.sx / originalPieceWidth); // Usa sx/sy que son originales
+        const rowIndex = Math.round(p.sy / originalPieceHeight);
 
         p.w = pw;
         p.h = ph;
@@ -265,6 +267,11 @@ function init() {
     completeMsg.style.display = "none";
     puzzleWrapper.style.borderColor = "#333";
     continueBtn.style.display = 'none';
+    
+    // REGLA 2: Asegurarse de que el temporizador y el botón de pausa sean visibles al inicio
+    pauseBtn.textContent = "⏸️ Pausa";
+    timerDisplay.style.display = 'inline-block';
+    pauseBtn.style.display = 'inline-block';
 
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
@@ -290,9 +297,14 @@ function draw() {
     for (const p of pieces.filter(p => !p.placed)) drawPiece(p);
 
     if (animatingPiece) {
+        if (animDirection === 1) {
+            animScale = 1 + 0.05 * (animFrame / 10);
+        } else {
+            animScale = 1 + 0.05 * ((20 - animFrame) / 10);
+        }
         animatingPiece.scale = animScale;
+
         animFrame++;
-        animScale += 0.05 * animDirection;
         if (animFrame >= 10) animDirection = -1;
         if (animFrame >= 20) {
             animatingPiece.scale = 1;
@@ -310,7 +322,7 @@ function drawPiece(piece) {
     ctx.translate(-piece.w / 2, -piece.h / 2);
     ctx.drawImage(img, piece.sx, piece.sy, piece.sw, piece.sh, 0, 0, piece.w, piece.h);
     ctx.strokeStyle = '#333';
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 1; /* REGLA 5: Bordes de igual grosor */
     ctx.strokeRect(0, 0, piece.w, piece.h);
     ctx.restore();
 }
@@ -387,7 +399,11 @@ function endPuzzle(success) {
     puzzleEnded = true;
     clearInterval(timerInterval);
     completeMsg.style.display = "block";
-    continueBtn.style.display = 'inline-block';
+    continueBtn.style.display = 'inline-block'; // Mostrar el botón "Siguiente"
+
+    // REGLA 2: Ocultar los botones de pausa y el temporizador al finalizar
+    pauseBtn.style.display = 'none';
+    timerDisplay.style.display = 'none';
 
     if (success) {
         successSound.play();
@@ -526,11 +542,22 @@ restartBtn.addEventListener("click", () => {
     puzzleEnded = false;
     completeMsg.style.display = "none";
     puzzleWrapper.style.borderColor = "#333";
+    // REGLA 2: Asegurarse de que el temporizador y el botón de pausa sean visibles al reiniciar
+    pauseBtn.textContent = "⏸️ Pausa";
+    timerDisplay.style.display = 'inline-block';
+    pauseBtn.style.display = 'inline-block';
     init();
 });
+
 pauseBtn.addEventListener("click", () => {
     paused = !paused;
-    pauseBtn.textContent = paused ? "▶️ Continuar" : "⏸️ Pausa";
+    if (paused) {
+        pauseBtn.textContent = "▶️ Continuar";
+        timerDisplay.style.display = 'none'; // Ocultar el temporizador cuando está en pausa
+    } else {
+        pauseBtn.textContent = "⏸️ Pausa";
+        timerDisplay.style.display = 'inline-block'; // Mostrar el temporizador cuando se reanuda
+    }
 });
 
 canvas.addEventListener("pointerdown", onPointerDown);
