@@ -11,12 +11,7 @@
         background: #fff;
         color: #222;
         font-size: 16px; /* Asegura un tamaño base para 'em' */
-        overflow: hidden; /* ¡Importante! Elimina el scroll global */
-        display: flex; /* Para centrar el contenido principal */
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-        height: 100vh; /* Asegura que el body ocupe toda la altura de la ventana */
+        overflow: hidden; /* ¡Importante! Elimina el scroll global del body */
     }
     h2 { /* Este es el título visible en la página */
         margin-bottom: 0.8em;
@@ -31,13 +26,11 @@
         margin-bottom: 1em;
         position: relative;
         min-height: 220px;
-        flex-grow: 1; /* Permite que el contenedor del reto ocupe el espacio disponible */
-        display: flex; /* Para alinear el contenido del reto */
+        /* Flexbox para retos sin puzzle para centrar contenido verticalmente */
+        display: flex;
         flex-direction: column;
         justify-content: flex-start;
         align-items: center;
-        width: 100%; /* Ajustar el ancho del reto */
-        max-width: 800px; /* Limitar el ancho en pantallas grandes */
     }
     .respuesta {
         margin: 0.4em 0;
@@ -70,37 +63,35 @@
         margin-top: 1em;
         justify-content: center; /* Centra los botones horizontalmente */
         align-items: center; /* Alinea verticalmente los botones si tienen alturas diferentes */
-        width: 100%;
-        max-width: 800px; /* Limitar el ancho en pantallas grandes */
     }
 
     button.btn, button#btnMostrarRespuesta, button#btnNextAfterReto {
         padding: 0.6em 1.2em;
         font-size: 1.1em;
-        border: none;
+        border: none; /* Se quita el borde de 2px para mantener el estilo del primer código */
         border-radius: 6px;
         cursor: pointer;
         background-color: #0077cc;
         color: white;
         user-select: none;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.3s ease; /* Transición para hover */
     }
     button.btn:hover, button#btnNextAfterReto:hover {
-        background-color: #005699;
+        background-color: #005699; /* Oscurecer al pasar el ratón */
     }
     button.btn:disabled {
         background-color: #999;
         cursor: not-allowed;
     }
     #btnMostrarRespuesta {
-        background-color: #28a745;
+        background-color: #28a745; /* Color del primer código */
         display: none; /* Por defecto oculto, su visibilidad se controla con JS */
     }
     #btnMostrarRespuesta:hover {
-        background-color: #1e7e34;
+        background-color: #1e7e34; /* Oscurecer al pasar el ratón */
     }
     #btnNextAfterReto {
-        background-color: #0077cc;
+        background-color: #0077cc; /* Usa el color original del botón para ser coherente */
         display: none; /* Por defecto oculto, su visibilidad se controla con JS */
     }
 
@@ -144,26 +135,24 @@
     /* Estilos específicos para el iframe del puzzle */
     #puzzleIframe {
         width: 100%;
-        height: calc(100vh - 170px); /* Ajusta la altura para que ocupe más espacio en móviles */
-        border: none; /* Quitamos el borde para que el puzzle maneje su propio borde */
+        height: calc(100vh - 150px); /* Ajusta la altura para que ocupe más espacio en móviles */
+        border: 1px solid #ddd;
         border-radius: 8px;
         display: block;
-        margin: 0.5em auto; /* Márgenes más pequeños alrededor del iframe */
-        flex-grow: 1; /* Permite que el iframe crezca y ocupe el espacio */
+        margin: 1em auto;
     }
 
     /* Media Query para móviles en horizontal: oculta el h2 y ajusta el espacio */
-    @media (orientation: landscape) {
+    @media (max-width: 800px) and (orientation: landscape) {
         h2 {
             display: none; /* Oculta el título "Reto Valencia be Guides" */
         }
         body {
-            margin: 0.2em; /* Reduce los márgenes del body para ganar espacio */
+            margin: 0.5em; /* Reduce los márgenes del body para ganar espacio */
         }
         #reto {
-            min-height: unset; /* Permitir que la altura se ajuste al contenido, especialmente al iframe */
-            padding: 0.5em; /* Reduce el padding del reto */
-            justify-content: center; /* Centrar verticalmente en landscape si el contenido no llena */
+            min-height: 180px; /* Ajusta la altura mínima del reto */
+            padding: 0.8em; /* Reduce el padding del reto */
         }
         button.btn, button#btnMostrarRespuesta, button#btnNextAfterReto {
             font-size: 1em; /* Reduce el tamaño de fuente de los botones */
@@ -176,9 +165,7 @@
             transform: scale(1.1); /* Reduce un poco el tamaño de los radios/checkboxes */
         }
         #puzzleIframe {
-            height: calc(100vh - 30px); /* Ajusta la altura del iframe en landscape para dejar espacio MÍNIMO */
-            width: calc(100vw - 10px); /* Ajusta el ancho para quitar el scroll horizontal */
-            max-width: none; /* Asegura que no haya límite de ancho en landscape */
+            height: calc(100vh - 120px); /* Ajusta la altura del iframe en landscape para dejar espacio */
         }
     }
 
@@ -186,14 +173,14 @@
     @media (min-width: 801px) or (orientation: portrait) {
         #puzzleIframe {
             max-width: 800px; /* Limita el ancho en pantallas grandes */
-            height: calc(100vh - 170px); /* Altura dinámica para pantallas más grandes y portrait */
+            height: 600px; /* Altura fija para pantallas más grandes */
         }
     }
 </style>
 </head>
 <body>
 
-<h2>Retos Aventura 1</h2>
+<h2></h2>
 <div id="reto" tabindex="0"></div>
 
 <div id="button-container">
@@ -444,9 +431,14 @@ function mostrarReto() {
     retoDiv.setAttribute("tabindex", "0");
 
     // Actualizar el título de la página principal con el número y pregunta del reto
-    document.querySelector('h2').textContent = `Reto ${reto.pregunta}`;
+    document.querySelector('h2').textContent = `${reto.pregunta}`;
 
     if (reto.tipo === "opcion" || reto.tipo === "opcion-multiple") {
+        // Asegurarse de que el flexbox de retoDiv se reinicie para centrar el contenido
+        retoDiv.style.display = 'flex';
+        retoDiv.style.justifyContent = 'flex-start'; // o 'center' si quieres centrar todo
+        retoDiv.style.alignItems = 'center';
+
         let preguntaElem = document.createElement("h3");
         preguntaElem.textContent = `${reto.pregunta}`;
         retoDiv.appendChild(preguntaElem);
@@ -472,6 +464,11 @@ function mostrarReto() {
         btnEnviar.style.display = "inline-block";
         btnEnviar.disabled = false;
     } else if (reto.tipo === "texto") {
+        // Asegurarse de que el flexbox de retoDiv se reinicie para centrar el contenido
+        retoDiv.style.display = 'flex';
+        retoDiv.style.justifyContent = 'flex-start'; // o 'center'
+        retoDiv.style.alignItems = 'center';
+
         let preguntaElem = document.createElement("h3");
         preguntaElem.textContent = `${reto.pregunta}`;
         retoDiv.appendChild(preguntaElem);
@@ -495,6 +492,11 @@ function mostrarReto() {
         btnEnviar.style.display = "none";
         btnMostrarRespuesta.style.display = "none";
         btnNext.style.display = "none"; // Asegurarse de que el botón "Siguiente" de la página principal esté oculto
+
+        // Para puzzles, el retoDiv no necesita flexbox de columna o centrado especial
+        retoDiv.style.display = 'block'; // Volver a display block para el iframe
+        retoDiv.style.justifyContent = 'initial';
+        retoDiv.style.alignItems = 'initial';
 
         const puzzleIframe = document.createElement("iframe");
         puzzleIframe.id = "puzzleIframe";
@@ -562,7 +564,6 @@ function fuegosArtificiales() {
         fuegosDiv.style.display = "none";
     }, DURACION_TOTAL_MS + 100);
 }
-
 
 /* Función para vibrar */
 function vibrar() {
@@ -697,7 +698,6 @@ window.addEventListener("message", (event) => {
         btnNext.click(); // Simula el click en el botón "Siguiente" del padre
     }
 });
-
 
 /* Mostrar primer reto al cargar */
 mostrarReto();
