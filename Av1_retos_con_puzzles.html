@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Retos Aventura 1 español</title>
+<title>Retos Aventura 1</title>
 <style>
     body {
         font-family: "Book Antiqua", Palatino, serif;
@@ -144,7 +144,7 @@
         h2 {
             display: none; /* Oculta el título "Reto Valencia be Guides" */
         }
-        #reto h3 { /* AÑADIDO: Oculta la pregunta del reto */
+        #reto h3 { /* Oculta la pregunta del reto en landscape */
             display: none;
         }
         body {
@@ -174,6 +174,13 @@
         #puzzleIframe {
             max-width: 800px; /* Limita el ancho en pantallas grandes */
             height: 600px; /* Altura fija para pantallas más grandes */
+        }
+        /* CAMBIOS APLICADOS: h3 para puzzles, en vertical o pantallas grandes */
+        #reto h3 {
+            text-align: center; /* Centrar la pregunta */
+            margin-top: 0; /* Subir al máximo */
+            margin-bottom: 0.5em; /* Pequeño margen inferior */
+            font-size: 1.1em; /* Letra más pequeña */
         }
     }
 </style>
