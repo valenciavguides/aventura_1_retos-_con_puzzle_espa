@@ -347,18 +347,16 @@ function updateTimerDisplay() {
 function endPuzzle(success) {
   puzzleEnded = true;
   clearInterval(timerInterval);
-  // completeMsg.style.display = "block"; // Se mantiene la visibilidad del div
+  // completeMsg.style.display = "block"; // Se mantiene la visibilidad del div si es necesario para otros elementos
   continueBtn.style.display = 'inline-block'; // Mostrar el botón "Siguiente"
 
   if (success) {
     successSound.play();
-    // messageText.textContent = "🎉 ¡Puzzle completado!"; // MENSAJE ELIMINADO
     puzzleWrapper.style.borderColor = "green";
     runFireworks();
     window.parent.postMessage("puzzle-state-completed", "*"); // Mensaje al padre
   } else {
     failSound.play();
-    // messageText.textContent = "⏰ Tiempo agotado. Gracias por participar."; // MENSAJE ELIMINADO
     puzzleWrapper.style.borderColor = "red";
     runConfetti();
     window.parent.postMessage("puzzle-state-timeout", "*"); // Mensaje al padre
