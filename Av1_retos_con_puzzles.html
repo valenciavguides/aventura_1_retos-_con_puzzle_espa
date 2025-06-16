@@ -466,7 +466,8 @@ function mostrarReto() {
         retoDiv.appendChild(btnEnviar);
         btnEnviar.style.display = "inline-block";
         btnEnviar.disabled = false;
-    } else if (reto.tipo === "texto") {
+    } 
+    else if (reto.tipo === "texto") {
         const inputTexto = document.createElement("input");
         inputTexto.type = "text";
         inputTexto.id = "respuestaTexto";
@@ -482,7 +483,8 @@ function mostrarReto() {
         btnEnviar.style.display = "inline-block";
         btnEnviar.disabled = false;
         setTimeout(() => inputTexto.focus(), 200);
-    } else if (reto.tipo === "puzzle") {
+    } 
+    else if (reto.tipo === "puzzle") {
         // Añade la clase 'puzzle-active' cuando el reto es un puzzle
         retoDiv.classList.add('puzzle-active');
 
@@ -602,7 +604,7 @@ function verificar() {
         // Ejemplo de verificación simple (sin importar mayúsculas/minúsculas y quitando espacios extra)
         const respuestaUsuario = inputTexto.value.trim().toLowerCase();
         const respuestaCorrecta = reto.correctaTexto.trim().toLowerCase();
-        esCorrecto = (respuestaUsuario === respuestaCorrecta);
+       esCorrecto = true;
     }
 
     if (esCorrecto) {
