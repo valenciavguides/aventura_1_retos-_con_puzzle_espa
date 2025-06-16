@@ -5,134 +5,120 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
 <title>8. Plaza de la Virgen</title>
 <style>
-  html, body {
-    margin: 0; padding: 0; height: 100%;
-    background: #f0f0f0;
-    font-family: sans-serif;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: flex-start;
-    /* IMPORTANTE: Evita el pull-to-refresh en el body */
-    overscroll-behavior-y: contain;
-  }
-  h1 {
-    font-size: 1.2em;
-    margin: 8px;
-    text-align: center;
-  }
-  #topBar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    width: 95vw;
-    max-width: 1000px;
-    gap: 10px;
-    flex-wrap: nowrap;
-  }
-  #leftControls {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-shrink: 1;
-    min-width: 0;
-  }
-  #restartBtn, #pauseBtn {
-    padding: 6px 14px;
-    background: white;
-    color: black;
-    border: 2px solid black;
-    border-radius: 8px;
-    font-size: 0.9em;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  #timer {
-    font-size: 1em;
-    font-weight: bold;
-    min-width: 60px;
-    text-align: center;
-    white-space: nowrap;
-  }
-  #continueBtn {
-    padding: 6px 14px;
-    background: white;
-    color: black;
-    border: 2px solid black;
-    border-radius: 8px;
-    font-size: 0.9em;
-    cursor: pointer;
-    white-space: nowrap;
-    flex-shrink: 0;
-    display: none; /* Este botón ahora lo controlará el iframe principal */
-  }
-  #puzzleWrapper {
-    width: 100%; /* Ocupa el 100% del ancho del padre */
-    flex-grow: 1; /* Permite que el wrapper crezca y ocupe el espacio disponible */
-    max-width: 1000px; /* Mantén un ancho máximo para pantallas grandes */
-    min-height: 300px; /* Una altura mínima para evitar que se colapse en algunos casos */
-    aspect-ratio: 3 / 2; /* Mantiene la proporción */
-    background: #ddd;
-    position: relative;
-    border: 5px solid #333;
-    overflow: hidden; /* Esto es crucial para que las piezas no se salgan visualmente */
-    touch-action: none; /* Esto evita el scroll y zoom por defecto al arrastrar */
-  }
-  canvas {
-    width: 100%; height: 100%; display: block;
-    user-select: none;
-  }
-  #completeMsg {
-    display: none;
-    position: absolute;
-    top: 40%; left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(255,255,255,0.95);
-    padding: 20px;
-    border: 2px solid #333;
-    border-radius: 12px;
-    text-align: center;
-    z-index: 10;
-    font-size: 1.2em;
-  }
-  @media (orientation: landscape) {
-    h1 {
-      display: none;
+    body {
+        margin: 0;
+        overflow: hidden; /* Evita barras de desplazamiento en el body */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh; /* Asegura que el body ocupe toda la altura de la ventana */
+        background: #f0f0f0;
     }
     #puzzleWrapper {
-      aspect-ratio: 16 / 9;
+        position: relative;
+        width: 100%;
+        height: 100%;
+        max-width: 800px; /* Limita el tamaño máximo del puzzle en pantallas grandes */
+        max-height: 600px; /* Limita el tamaño máximo del puzzle en pantallas grandes */
+        aspect-ratio: 4 / 3; /* Mantener la proporción de la imagen original */
+        background-color: #333; /* Color de fondo del contenedor del puzzle */
+        border: 3px solid #333;
+        border-radius: 8px;
+        overflow: hidden; /* Oculta cualquier cosa que se salga de este contenedor */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column; /* Para apilar los controles */
+    }
+    canvas {
+        display: block;
+        touch-action: none; /* Previene el scroll/zoom del navegador al tocar el canvas */
+        flex-grow: 1; /* Permite que el canvas ocupe el espacio disponible */
+    }
+    #completeMsg {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 1.5em 2em;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        font-size: 1.8em;
+        font-weight: bold;
+        color: #222;
+        text-align: center;
+        z-index: 50;
+        display: none;
+    }
+    #completeMsg button {
+        margin-top: 1em;
+        padding: 0.8em 1.5em;
+        font-size: 1em;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    #completeMsg button:hover {
+        background-color: #0056b3;
     }
     #topBar {
-      width: 100vw;
-      padding: 0 10px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5em 1em;
+        background-color: rgba(0,0,0,0.5);
+        color: white;
+        z-index: 20;
+        box-sizing: border-box;
     }
-  }
-  @media (max-width: 768px) and (orientation: portrait) {
-    #puzzleWrapper {
-      height: 600px; /* O puedes dejar flex-grow 1 y min-height en vez de un height fijo aquí */
+    #topBar button {
+        padding: 0.4em 0.8em;
+        font-size: 0.9em;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 0 0.3em;
     }
-  }
+    #topBar button:hover {
+        background-color: #0056b3;
+    }
+    #timer {
+        font-size: 1.2em;
+        font-weight: bold;
+    }
 </style>
 </head>
 <body>
 
-<div id="topBar">
-  <div id="leftControls">
-    <button id="restartBtn">🔄 Reiniciar</button>
-    <button id="pauseBtn">⏸️ Pausa</button>
+<div id="puzzleWrapper">
+  <div id="topBar">
+    <div id="leftControls">
+      <button id="restartBtn">🔄 Reiniciar</button>
+      <button id="pauseBtn">⏸️ Pausa</button>
+    </div>
     <span id="timer">03:00</span>
   </div>
-</div>
-<div id="puzzleWrapper">
   <canvas id="puzzleCanvas"></canvas>
   <div id="completeMsg">
     <strong id="messageText"></strong><br />
+    <button id="continueBtn">Continuar Aventura</button>
   </div>
 </div>
 <script>
 const canvas = document.getElementById("puzzleCanvas");
 const ctx = canvas.getContext("2d");
-// URL de la imagen para el puzzle de la Plaza de la Virgen
-const imageSrc = "imagenes_puzzles/P8_plaza_de_la_virgen.jpg";
+// URL de la imagen para el puzzle (AJUSTA ESTO PARA CADA PUZZLE)
+const imageSrc = "imagenes_puzzles/P8_plaza_de_la_virgen.jpg"; // <--- CAMBIA ESTA LÍNEA EN CADA ARCHIVO DE PUZZLE
 const rows = 3, cols = 4;
 let pieces = [], draggingPiece = null;
 let offsetX = 0, offsetY = 0, placedCount = 0;
@@ -144,6 +130,8 @@ const restartBtn = document.getElementById("restartBtn");
 const pauseBtn = document.getElementById("pauseBtn");
 const timerDisplay = document.getElementById("timer");
 const puzzleWrapper = document.getElementById("puzzleWrapper");
+const continueBtn = document.getElementById("continueBtn");
+
 const placeSound = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg");
 const failSound = new Audio("https://actions.google.com/sounds/v1/cartoon/concussive_hit_guitar_boing.ogg");
 const successSound = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
@@ -159,312 +147,365 @@ effectCanvas.style.left = "0";
 effectCanvas.style.pointerEvents = "none";
 effectCanvas.style.width = "100%";
 effectCanvas.style.height = "100%";
+effectCanvas.style.zIndex = "10"; // Asegura que esté por encima del canvas del puzzle
 puzzleWrapper.appendChild(effectCanvas);
 
-img.onload = () => { init(); };
+img.onload = () => {
+    init();
+    resizePieces(); // Asegurarse de dimensionar correctamente después de la carga
+};
 img.src = imageSrc;
 
 window.addEventListener("resize", resizePieces);
-window.addEventListener("orientationchange", () => setTimeout(resizePieces, 300));
+window.addEventListener("orientationchange", () => setTimeout(resizePieces, 300)); // Pequeño retraso para que el navegador se ajuste
 
 function resizePieces() {
-  const w = puzzleWrapper.clientWidth;
-  const h = puzzleWrapper.clientHeight;
-  canvas.width = w;
-  canvas.height = h;
-  effectCanvas.width = w;
-  effectCanvas.height = h;
-  const pw = w / cols;
-  const ph = h / rows;
+    const w = puzzleWrapper.clientWidth;
+    const h = puzzleWrapper.clientHeight;
 
-  pieces.forEach(p => {
-    const colIndex = Math.round(p.correctX / p.w);
-    const rowIndex = Math.round(p.correctY / p.h);
-    p.w = pw;
-    p.h = ph;
-    p.correctX = colIndex * pw;
-    p.correctY = rowIndex * ph;
-    if (p.placed) {
-      p.x = p.correctX;
-      p.y = p.correctY;
-    } else {
-      p.x = Math.min(p.x * (w / canvas.width), w - pw);
-      p.y = Math.min(p.y * (h / canvas.height), h - ph);
-    }
-  });
-  draw();
+    canvas.width = w;
+    canvas.height = h;
+    effectCanvas.width = w;
+    effectCanvas.height = h;
+
+    // Calcular el tamaño de las piezas en función del nuevo tamaño del canvas
+    const pw = w / cols;
+    const ph = h / rows;
+
+    pieces.forEach(p => {
+        // Guardar la posición relativa de la pieza antes de recalcular
+        const colIndex = Math.round(p.correctX / p.w);
+        const rowIndex = Math.round(p.correctY / p.h);
+
+        p.w = pw;
+        p.h = ph;
+
+        // Recalcular la posición correcta basada en el nuevo tamaño de la pieza
+        p.correctX = colIndex * pw;
+        p.correctY = rowIndex * ph;
+
+        if (p.placed) {
+            // Si ya está colocada, fijarla a su nueva posición correcta
+            p.x = p.correctX;
+            p.y = p.correctY;
+        } else {
+            // Si no está colocada, ajustar su posición proporcionalmente
+            // y asegurarse de que no se salga de los límites del canvas
+            p.x = Math.min(Math.max(p.x * (w / canvas.width), 0), w - pw);
+            p.y = Math.min(Math.max(p.y * (h / canvas.height), 0), h - ph);
+        }
+    });
+    draw(); // Redibujar el puzzle después de redimensionar
 }
 
 function init() {
-  puzzleEnded = false;
-  const w = puzzleWrapper.clientWidth, h = puzzleWrapper.clientHeight;
-  canvas.width = w; canvas.height = h;
-  effectCanvas.width = w; effectCanvas.height = h;
-  const pw = w / cols, ph = h / rows;
+    puzzleEnded = false;
+    // El canvas y effectCanvas ya se redimensionan en resizePieces
+    // No necesitamos obtener clientWidth/clientHeight aquí de nuevo para el canvas
+    // La función resizePieces() se encargará de establecer los tamaños
+    // const w = puzzleWrapper.clientWidth, h = puzzleWrapper.clientHeight;
+    // canvas.width = w; canvas.height = h;
+    // effectCanvas.width = w; effectCanvas.height = h;
 
-  pieces = []; placedCount = 0;
-  completeMsg.style.display = "none";
-  puzzleWrapper.style.borderColor = "#333";
+    const pw = canvas.width / cols; // Usar el ancho actual del canvas
+    const ph = canvas.height / rows; // Usar el alto actual del canvas
 
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      pieces.push({
-        sx: c * img.width / cols, sy: r * img.height / rows,
-        sw: img.width / cols, sh: img.height / rows,
-        x: Math.random() * (w - pw), y: Math.random() * (h - ph),
-        w: pw, h: ph, correctX: c * pw, correctY: r * ph,
-        placed: false, scale: 1
-      });
+    pieces = []; placedCount = 0;
+    completeMsg.style.display = "none";
+    puzzleWrapper.style.borderColor = "#333";
+    continueBtn.style.display = "none"; // Oculta el botón de continuar al inicio
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            pieces.push({
+                sx: c * img.width / cols, sy: r * img.height / rows,
+                sw: img.width / cols, sh: img.height / rows,
+                x: Math.random() * (canvas.width - pw), // Posición aleatoria dentro del canvas
+                y: Math.random() * (canvas.height - ph), // Posición aleatoria dentro del canvas
+                w: pw, h: ph, correctX: c * pw, correctY: r * ph,
+                placed: false, scale: 1
+            });
+        }
     }
-  }
 
-  timeLeft = 180; // Reiniciar tiempo
-  updateTimerDisplay(); // Actualizar visualmente
-  startTimer(); // Iniciar cuenta
-  draw();
+    timeLeft = 180; // Reiniciar tiempo
+    updateTimerDisplay(); // Actualizar visualmente
+    startTimer(); // Iniciar cuenta
+    draw();
 }
 
 function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  for (const p of pieces.filter(p => p.placed)) drawPiece(p);
-  for (const p of pieces.filter(p => !p.placed)) drawPiece(p);
-  if (animatingPiece) {
-    animatingPiece.scale = animScale;
-    animFrame++;
-    animScale += 0.05 * animDirection;
-    if (animFrame >= 10) animDirection = -1;
-    if (animFrame >= 20) {
-      animatingPiece.scale = 1;
-      animatingPiece = null;
-      animFrame = 0; animDirection = 1;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Dibujar piezas colocadas primero, luego las no colocadas para que se vean encima
+    for (const p of pieces.filter(p => p.placed)) drawPiece(p);
+    for (const p of pieces.filter(p => !p.placed)) drawPiece(p);
+
+    if (animatingPiece) {
+        animatingPiece.scale = animScale;
+        animFrame++;
+        animScale += 0.05 * animDirection;
+        if (animFrame >= 10) animDirection = -1;
+        if (animFrame >= 20) {
+            animatingPiece.scale = 1;
+            animatingPiece = null;
+            animFrame = 0; animDirection = 1;
+        }
     }
-  }
-  requestAnimationFrame(draw);
+    // Solo solicitar el siguiente frame si el puzzle no ha terminado y no está pausado
+    if (!puzzleEnded && !paused) {
+        requestAnimationFrame(draw);
+    }
 }
 
 function drawPiece(piece) {
-  ctx.save();
-  ctx.translate(piece.x + piece.w / 2, piece.y + piece.h / 2);
-  ctx.scale(piece.scale, piece.scale);
-  ctx.translate(-piece.w / 2, -piece.h / 2);
-  ctx.drawImage(img, piece.sx, piece.sy, piece.sw, piece.sh, 0, 0, piece.w, piece.h);
-  ctx.restore();
+    ctx.save();
+    ctx.translate(piece.x + piece.w / 2, piece.y + piece.h / 2);
+    ctx.scale(piece.scale, piece.scale);
+    ctx.translate(-piece.w / 2, -piece.h / 2);
+    ctx.drawImage(img, piece.sx, piece.sy, piece.sw, piece.sh, 0, 0, piece.w, piece.h);
+    ctx.restore();
 }
 
 function onPointerDown(e) {
-  if (puzzleEnded || paused) return;
-  const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-  for (let i = pieces.length - 1; i >= 0; i--) {
-    const p = pieces[i];
-    if (!p.placed && x >= p.x && x <= p.x + p.w && y >= p.y && y <= p.y + p.h) {
-      draggingPiece = p;
-      offsetX = x - p.x;
-      offsetY = y - p.y;
-      break;
+    if (puzzleEnded || paused) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Invertir el orden para seleccionar las piezas que están más arriba (últimas en dibujarse)
+    for (let i = pieces.length - 1; i >= 0; i--) {
+        const p = pieces[i];
+        if (!p.placed && x >= p.x && x <= p.x + p.w && y >= p.y && y <= p.y + p.h) {
+            draggingPiece = p;
+            offsetX = x - p.x;
+            offsetY = y - p.y;
+            // Mover la pieza arrastrada al final del array para que se dibuje encima
+            pieces.splice(i, 1);
+            pieces.push(p);
+            break;
+        }
     }
-  }
-  // Añade esto para prevenir el comportamiento por defecto (ej. selección de texto)
-  if (e.pointerType === "mouse" || e.pointerType === "touch") {
-    e.preventDefault();
-  }
+    if (draggingPiece && (e.pointerType === "mouse" || e.pointerType === "touch")) {
+        e.preventDefault(); // Previene el comportamiento por defecto (ej. scroll/selección)
+    }
 }
 
 function onPointerMove(e) {
-  if (!draggingPiece || puzzleEnded || paused) return;
-  const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-  draggingPiece.x = Math.min(Math.max(x - offsetX, 0), canvas.width - draggingPiece.w);
-  draggingPiece.y = Math.min(Math.max(y - offsetY, 0), canvas.height - draggingPiece.h);
-  // Añade esto para prevenir el comportamiento por defecto (ej. scroll)
-  if (e.pointerType === "mouse" || e.pointerType === "touch") {
-    e.preventDefault();
-  }
+    if (!draggingPiece || puzzleEnded || paused) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    draggingPiece.x = Math.min(Math.max(x - offsetX, 0), canvas.width - draggingPiece.w);
+    draggingPiece.y = Math.min(Math.max(y - offsetY, 0), canvas.height - draggingPiece.h);
+
+    if (e.pointerType === "mouse" || e.pointerType === "touch") {
+        e.preventDefault(); // Previene el scroll/zoom mientras se arrastra
+    }
 }
 
 function onPointerUp(e) {
-  if (!draggingPiece || puzzleEnded || paused) return;
-  if (Math.abs(draggingPiece.x - draggingPiece.correctX) < draggingPiece.w / 4 &&
-      Math.abs(draggingPiece.y - draggingPiece.correctY) < draggingPiece.h / 4) {
-    draggingPiece.x = draggingPiece.correctX;
-    draggingPiece.y = draggingPiece.correctY;
-    draggingPiece.placed = true;
-    placedCount++;
-    placeSound.play();
-    animatingPiece = draggingPiece;
-    animFrame = 0; animDirection = 1; animScale = 1;
-  }
-  // Eliminado: else { failSound.play(); } -> para quitar el sonido al colocar mal una pieza.
-  draggingPiece = null;
-  if (placedCount === pieces.length) {
-    endPuzzle(true);
-  }
+    if (!draggingPiece || puzzleEnded || paused) return;
+
+    // Ajuste de la tolerancia para "encajar" la pieza
+    // Una pieza se considera "correcta" si está dentro de un 1/4 de su ancho/alto de la posición correcta
+    const toleranceX = draggingPiece.w / 4;
+    const toleranceY = draggingPiece.h / 4;
+
+    if (Math.abs(draggingPiece.x - draggingPiece.correctX) < toleranceX &&
+        Math.abs(draggingPiece.y - draggingPiece.correctY) < toleranceY) {
+        draggingPiece.x = draggingPiece.correctX;
+        draggingPiece.y = draggingPiece.correctY;
+        draggingPiece.placed = true;
+        placedCount++;
+        placeSound.play();
+        animatingPiece = draggingPiece; // Inicia la animación de la pieza
+        animFrame = 0; animDirection = 1; animScale = 1; // Reinicia animación
+    }
+    // Eliminado: else { failSound.play(); } -> para quitar el sonido al colocar mal una pieza.
+    draggingPiece = null;
+    if (placedCount === pieces.length) {
+        endPuzzle(true);
+    }
 }
 
 function startTimer() {
-  clearInterval(timerInterval);
-  timerInterval = setInterval(() => {
-    if (!paused && !puzzleEnded) {
-      timeLeft--;
-      updateTimerDisplay();
-      if (timeLeft <= 0) {
-        endPuzzle(false);
-      }
-    }
-  }, 1000);
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        if (!paused && !puzzleEnded) {
+            timeLeft--;
+            updateTimerDisplay();
+            if (timeLeft <= 0) {
+                endPuzzle(false);
+            }
+        }
+    }, 1000);
 }
 
 function updateTimerDisplay() {
-  const m = Math.floor(timeLeft / 60);
-  const s = timeLeft % 60;
-  timerDisplay.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    const m = Math.floor(timeLeft / 60);
+    const s = timeLeft % 60;
+    timerDisplay.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
 }
 
 function endPuzzle(success) {
-  puzzleEnded = true;
-  clearInterval(timerInterval);
-  completeMsg.style.display = "block";
+    puzzleEnded = true;
+    clearInterval(timerInterval);
+    completeMsg.style.display = "block";
+    continueBtn.style.display = "block"; // Muestra el botón de continuar
 
-  if (success) {
-    successSound.play();
-    messageText.textContent = "🎉 ¡Puzzle completado!";
-    puzzleWrapper.style.borderColor = "green";
-    runFireworks();
-    // Envía mensaje a la página padre indicando que el puzzle se completó con éxito
-    window.parent.postMessage("puzzle-state-completed", "*");
-  } else {
-    failSound.play();
-    messageText.textContent = "⏰ Tiempo agotado. Gracias por participar.";
-    puzzleWrapper.style.borderColor = "red";
-    runConfetti();
-    // Envía mensaje a la página padre indicando que el tiempo del puzzle se agotó
-    window.parent.postMessage("puzzle-state-timeout", "*");
-  }
-  // Siempre se envía el mensaje para avanzar al siguiente reto, independientemente del resultado del puzzle
-  window.parent.postMessage('advance-to-next', '*');
+    if (success) {
+        successSound.play();
+        messageText.textContent = "🎉 ¡Puzzle completado!";
+        puzzleWrapper.style.borderColor = "green";
+        runFireworks();
+        // Envía mensaje a la página padre indicando que el puzzle se completó con éxito
+        window.parent.postMessage("puzzle-state-completed", "*");
+    } else {
+        failSound.play();
+        messageText.textContent = "⏰ Tiempo agotado. Gracias por participar.";
+        puzzleWrapper.style.borderColor = "red";
+        runConfetti();
+        // Envía mensaje a la página padre indicando que el tiempo del puzzle se agotó
+        window.parent.postMessage("puzzle-state-timeout", "*");
+    }
+    // No enviar 'advance-to-next' aquí; espera al clic del botón 'Continuar'
 }
 
 function runFireworks() {
-  let duration = 5000;
-  let startTime = null;
-  const particles = [];
-  const colors = ["#ff2e2e","#ff7f50","#ffcc00","#3cff5f","#1e90ff","#9b30ff"];
+    let duration = 5000;
+    let startTime = null;
+    const particles = [];
+    const colors = ["#ff2e2e","#ff7f50","#ffcc00","#3cff5f","#1e90ff","#9b30ff"];
 
-  effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
-
-  function createParticle(x, y) {
-    return {
-      x, y,
-      vx: (Math.random() - 0.5) * 6,
-      vy: (Math.random() - 0.5) * 6,
-      life: 100,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      size: Math.random() * 3 + 2
-    };
-  }
-
-  function loop(timestamp) {
-    if (!startTime) startTime = timestamp;
-    let elapsed = timestamp - startTime;
     effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
 
-    if (elapsed < duration) {
-      if (particles.length < 100) {
-        let x = Math.random() * effectCanvas.width;
-        let y = Math.random() * effectCanvas.height / 2;
-        for(let i=0; i<5; i++) {
-          particles.push(createParticle(x, y));
-        }
-      }
-      for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.1;
-        p.life--;
-        if (p.life <= 0) particles.splice(i, 1);
-        else {
-          effectCtx.beginPath();
-          effectCtx.fillStyle = p.color;
-          effectCtx.shadowColor = p.color;
-          effectCtx.shadowBlur = 10;
-          effectCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-          effectCtx.fill();
-          effectCtx.closePath();
-        }
-      }
-      requestAnimationFrame(loop);
-    } else {
-      effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+    function createParticle(x, y) {
+        return {
+            x, y,
+            vx: (Math.random() - 0.5) * 6,
+            vy: (Math.random() - 0.5) * 6,
+            life: 100,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            size: Math.random() * 3 + 2
+        };
     }
-  }
-  requestAnimationFrame(loop);
+
+    function loop(timestamp) {
+        if (!startTime) startTime = timestamp;
+        let elapsed = timestamp - startTime;
+        effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+
+        if (elapsed < duration) {
+            if (particles.length < 100) { // Limitar el número de partículas para evitar sobrecarga
+                let x = Math.random() * effectCanvas.width;
+                let y = Math.random() * effectCanvas.height / 2; // Arriba de la pantalla
+                for(let i=0; i<5; i++) {
+                    particles.push(createParticle(x, y));
+                }
+            }
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.1; // Gravedad
+                p.life--;
+                if (p.life <= 0) particles.splice(i, 1);
+                else {
+                    effectCtx.beginPath();
+                    effectCtx.fillStyle = p.color;
+                    effectCtx.shadowColor = p.color;
+                    effectCtx.shadowBlur = 10;
+                    effectCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    effectCtx.fill();
+                    effectCtx.closePath();
+                }
+            }
+            requestAnimationFrame(loop);
+        } else {
+            effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+        }
+    }
+    requestAnimationFrame(loop);
 }
 
 function runConfetti() {
-  let duration = 5000;
-  let startTime = null;
-  const confettiPieces = [];
-  const colors = ["#ff0","#f0f","#0ff","#0f0","#00f","#f00"];
+    let duration = 5000;
+    let startTime = null;
+    const confettiPieces = [];
+    const colors = ["#ff0","#f0f","#0ff","#0f0","#00f","#f00"];
 
-  effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
-
-  function createConfetti() {
-    return {
-      x: Math.random() * effectCanvas.width,
-      y: Math.random() * -20,
-      size: Math.random() * 8 + 8,
-      speedY: Math.random() * 3 + 2,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      tilt: Math.random() * 10 - 5,
-      tiltSpeed: Math.random() * 0.1 + 0.05
-    };
-  }
-
-  for(let i = 0; i < 150; i++) {
-    confettiPieces.push(createConfetti());
-  }
-
-  function loop(timestamp) {
-    if (!startTime) startTime = timestamp;
-    let elapsed = timestamp - startTime;
     effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
 
-    if (elapsed < duration) {
-      confettiPieces.forEach(p => {
-        p.y += p.speedY;
-        p.tilt += p.tiltSpeed;
-        if (p.y > effectCanvas.height) {
-          p.x = Math.random() * effectCanvas.width;
-          p.y = Math.random() * -20;
-        }
-        effectCtx.save();
-        effectCtx.translate(p.x, p.y);
-        effectCtx.rotate(p.tilt);
-        effectCtx.fillStyle = p.color;
-        effectCtx.fillRect(-p.size/2, -p.size/4, p.size, p.size/2);
-        effectCtx.restore();
-      });
-      requestAnimationFrame(loop);
-    } else {
-      effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+    function createConfetti() {
+        return {
+            x: Math.random() * effectCanvas.width,
+            y: Math.random() * -20, // Empieza un poco fuera de la pantalla
+            size: Math.random() * 8 + 8,
+            speedY: Math.random() * 3 + 2,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            tilt: Math.random() * 10 - 5,
+            tiltSpeed: Math.random() * 0.1 + 0.05
+        };
     }
-  }
-  requestAnimationFrame(loop);
+
+    for(let i = 0; i < 150; i++) {
+        confettiPieces.push(createConfetti());
+    }
+
+    function loop(timestamp) {
+        if (!startTime) startTime = timestamp;
+        let elapsed = timestamp - startTime;
+        effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+
+        if (elapsed < duration) {
+            confettiPieces.forEach(p => {
+                p.y += p.speedY;
+                p.tilt += p.tiltSpeed;
+                if (p.y > effectCanvas.height) { // Reiniciar si se sale de la pantalla
+                    p.x = Math.random() * effectCanvas.width;
+                    p.y = Math.random() * -20;
+                }
+                effectCtx.save();
+                effectCtx.translate(p.x, p.y);
+                effectCtx.rotate(p.tilt);
+                effectCtx.fillStyle = p.color;
+                effectCtx.fillRect(-p.size/2, -p.size/4, p.size, p.size/2);
+                effectCtx.restore();
+            });
+            requestAnimationFrame(loop);
+        } else {
+            effectCtx.clearRect(0, 0, effectCanvas.width, effectCanvas.height);
+        }
+    }
+    requestAnimationFrame(loop);
 }
 
 restartBtn.addEventListener("click", () => {
-  paused = false;
-  puzzleEnded = false;
-  completeMsg.style.display = "none";
-  puzzleWrapper.style.borderColor = "#333";
-  init();
+    paused = false;
+    puzzleEnded = false;
+    completeMsg.style.display = "none";
+    puzzleWrapper.style.borderColor = "#333";
+    continueBtn.style.display = "none";
+    init();
+    // Vuelve a empezar el bucle de dibujo si se detuvo
+    requestAnimationFrame(draw);
 });
+
 pauseBtn.addEventListener("click", () => {
-  paused = !paused;
-  pauseBtn.textContent = paused ? "▶️ Continuar" : "⏸️ Pausa";
+    paused = !paused;
+    pauseBtn.textContent = paused ? "▶️ Continuar" : "⏸️ Pausa";
+    if (!paused) {
+        requestAnimationFrame(draw); // Reinicia el bucle de dibujo al despausar
+        startTimer(); // Reinicia el temporizador
+    } else {
+        clearInterval(timerInterval); // Detiene el temporizador
+    }
+});
+
+continueBtn.addEventListener("click", () => {
+    // Esto es lo que le dice a la página principal que avance al siguiente reto
+    window.parent.postMessage('advance-to-next', '*');
 });
 
 canvas.addEventListener("pointerdown", onPointerDown);
