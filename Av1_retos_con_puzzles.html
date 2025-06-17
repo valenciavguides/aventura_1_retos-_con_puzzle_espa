@@ -129,11 +129,14 @@
     /* Estilos específicos para el iframe del puzzle */
     #puzzleIframe {
         width: 100%;
-        height: calc(100vh - 150px); /* Ajusta la altura para que ocupe más espacio en móviles */
+        /* Por defecto, para pantallas más grandes o portrait: */
+        max-width: 980px; /* Ancho máximo en pantallas grandes (el que ya definiste) */
+        max-height: 650px; /* Alto máximo en pantallas grandes (el que ya definiste) */
+        height: 650px; /* Altura de respaldo si max-height no es suficiente, o si no hay otra regla */
         border: 1px solid #ddd;
         border-radius: 8px;
         display: block;
-        margin: 1em auto;
+        margin: 1em auto; /* Centrarlo y darle un margen */
     }
 
     /* Media Query para móviles en horizontal: oculta el h2 y ajusta el espacio */
@@ -143,7 +146,7 @@
         }
         /* Oculta la pregunta del reto, solo si el reto NO es un puzzle */
         #reto:not(.puzzle-active) h3 {
-             font-size: 1.2em; /* Puedes ajustar el tamaño para landscape si es necesario */
+            font-size: 1.2em; /* Puedes ajustar el tamaño para landscape si es necesario */
         }
         /* Oculta la pregunta del reto de puzzle en landscape */
         #reto.puzzle-active h3 {
@@ -153,7 +156,7 @@
             margin: 0.5em; /* Reduce los márgenes del body para ganar espacio */
         }
         #reto {
-            min-height: 180px; /* Ajusta la altura mínima del reto */
+            min-height: auto; /* Permite que el contenedor del puzzle se ajuste a la altura del iframe */
             padding: 0.8em; /* Reduce el padding del reto */
         }
         button.btn, button#btnMostrarRespuesta, button#btnNextAfterReto {
@@ -167,16 +170,15 @@
             transform: scale(1.1); /* Reduce un poco el tamaño de los radios/checkboxes */
         }
         #puzzleIframe {
-            height: calc(100vh - 120px); /* Ajusta la altura del iframe en landscape para dejar espacio */
+            /* Altura para móviles en horizontal, usando dvh para mejor comportamiento */
+            height: calc(100dvh - 80px); /* Ajustado para dar más espacio a botones y márgenes */
+            max-width: 100%; /* Asegurarse de que no esté limitado por la regla de pantallas grandes */
+            margin: 0.5em auto; /* Ajustar el margen en móviles */
         }
     }
 
     /* Media Query para pantallas más grandes o portrait */
     @media (min-width: 801px) or (orientation: portrait) {
-        #puzzleIframe {
-            max-width: 980px; /* Limita el ancho en pantallas grandes */
-            max-height: 650px; /* Altura fija para pantallas más grandes */
-        }
         /* Esto es CLAVE: el h3 dentro de #reto SOLO será pequeño si #reto tiene la clase .puzzle-active */
         #reto.puzzle-active h3 {
             text-align: center; /* Centrar la pregunta */
@@ -466,7 +468,7 @@ function mostrarReto() {
         retoDiv.appendChild(btnEnviar);
         btnEnviar.style.display = "inline-block";
         btnEnviar.disabled = false;
-    } 
+    }
     else if (reto.tipo === "texto") {
         const inputTexto = document.createElement("input");
         inputTexto.type = "text";
@@ -483,7 +485,7 @@ function mostrarReto() {
         btnEnviar.style.display = "inline-block";
         btnEnviar.disabled = false;
         setTimeout(() => inputTexto.focus(), 200);
-    } 
+    }
     else if (reto.tipo === "puzzle") {
         // Añade la clase 'puzzle-active' cuando el reto es un puzzle
         retoDiv.classList.add('puzzle-active');
@@ -604,7 +606,7 @@ function verificar() {
         // Ejemplo de verificación simple (sin importar mayúsculas/minúsculas y quitando espacios extra)
         const respuestaUsuario = inputTexto.value.trim().toLowerCase();
         const respuestaCorrecta = reto.correctaTexto.trim().toLowerCase();
-       esCorrecto = true;
+        esCorrecto = true;
     }
 
     if (esCorrecto) {
