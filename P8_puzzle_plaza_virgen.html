@@ -18,8 +18,8 @@
         position: relative;
         width: 100%;
         height: 100%;
-        max-width: 850px; /* Aumentado ligeramente */
-        max-height: 650px; /* Aumentado ligeramente */
+        max-width: 900px; /* Aumentado nuevamente */
+        max-height: 675px; /* Aumentado nuevamente (manteniendo 4/3 con 900px) */
         aspect-ratio: 4 / 3; /* Mantiene la proporción de la imagen original */
         background-color: #333; /* Color de fondo del contenedor del puzzle */
         border: 3px solid #333; /* Borde de igual grosor */
@@ -209,8 +209,8 @@ function init() {
     paused = false; // Asegurar que el puzzle no esté pausado al reiniciar
     pauseBtn.textContent = "⏸️ Pausa"; // Resetear el texto del botón de pausa
 
-    // Resetear el color del borde del puzzleWrapper al iniciar o reiniciar
-    puzzleWrapper.style.borderColor = "#333";
+    // La lógica de reseteo del borde se ha movido al event listener del botón Reiniciar para mejor control.
+    // puzzleWrapper.style.borderColor = "#333"; // <-- Esta línea se movió.
 
     const pw = canvas.width / cols;
     const ph = canvas.height / rows;
@@ -280,9 +280,6 @@ function onPointerDown(e) {
     // Invertir el orden para seleccionar las piezas que están más arriba (últimas en dibujarse)
     for (let i = pieces.length - 1; i >= 0; i--) {
         const p = pieces[i];
-        // Ajusta la verificación de posición para el canvas que ahora tiene un margin-top
-        // Ya no es necesario ajustar el y, porque el canvas en si mismo tiene un margin-top
-        // y sus coordenadas internas empiezan en 0,0 relativo a si mismo.
         if (!p.placed && x >= p.x && x <= p.x + p.w && y >= p.y && y <= p.y + p.h) {
             draggingPiece = p;
             offsetX = x - p.x;
@@ -490,14 +487,12 @@ function runConfetti() {
 }
 
 restartBtn.addEventListener("click", () => {
-    // Asegurarse de resetear el color del borde AQUI y luego iniciar
-    puzzleWrapper.style.borderColor = "#333"; // Resetea el color del borde
     paused = false;
     puzzleEnded = false;
     completeMsg.style.display = "none";
     continueBtn.style.display = "none";
-    init(); // Llama a init DESPUÉS de resetear el borde
-    // Vuelve a empezar el bucle de dibujo si se detuvo
+    init(); // Llama a init primero para reestablecer todo el estado del puzzle
+    puzzleWrapper.style.borderColor = "#333"; // <-- ¡Ahora se resetea el borde aquí!
     requestAnimationFrame(draw);
 });
 
