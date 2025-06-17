@@ -18,22 +18,56 @@
         position: relative;
         width: 100%;
         height: 100%;
-        max-width: 800px; /* Limita el tamaño máximo del puzzle en pantallas grandes */
-        max-height: 600px; /* Limita el tamaño máximo del puzzle en pantallas grandes */
-        aspect-ratio: 4 / 3; /* Mantener la proporción de la imagen original */
+        max-width: 850px; /* Aumentado ligeramente */
+        max-height: 650px; /* Aumentado ligeramente */
+        aspect-ratio: 4 / 3; /* Mantiene la proporción de la imagen original */
         background-color: #333; /* Color de fondo del contenedor del puzzle */
-        border: 3px solid #333;
+        border: 3px solid #333; /* Borde de igual grosor */
         border-radius: 8px;
         overflow: hidden; /* Oculta cualquier cosa que se salga de este contenedor */
         display: flex;
-        justify-content: center;
+        flex-direction: column; /* Apila los controles y el canvas */
+        justify-content: flex-start; /* Alinea los elementos al inicio (arriba) */
         align-items: center;
-        flex-direction: column; /* Para apilar los controles */
+    }
+    #topBar {
+        position: absolute; /* Posiciona la barra de botones absolutamente */
+        top: 0;
+        left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5em 1em;
+        background-color: rgba(0,0,0,0.5);
+        color: white;
+        z-index: 20; /* Asegura que esté por encima del canvas */
+        box-sizing: border-box;
+    }
+    #topBar button {
+        padding: 0.4em 0.8em;
+        font-size: 0.9em;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 0 0.3em;
+    }
+    #topBar button:hover {
+        background-color: #0056b3;
+    }
+    #timer {
+        font-size: 1.2em;
+        font-weight: bold;
     }
     canvas {
         display: block;
         touch-action: none; /* Previene el scroll/zoom del navegador al tocar el canvas */
-        flex-grow: 1; /* Permite que el canvas ocupe el espacio disponible */
+        flex-grow: 1; /* Permite que el canvas ocupe el espacio restante */
+        margin-top: 50px; /* Espacio para que los botones queden arriba */
+        width: 100%; /* Asegura que el canvas use todo el ancho disponible dentro del wrapper */
+        height: calc(100% - 50px); /* Ajusta la altura del canvas restando el margen */
     }
     #completeMsg {
         position: absolute;
@@ -64,37 +98,6 @@
     }
     #completeMsg button:hover {
         background-color: #0056b3;
-    }
-    #topBar {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.5em 1em;
-        background-color: rgba(0,0,0,0.5);
-        color: white;
-        z-index: 20;
-        box-sizing: border-box;
-    }
-    #topBar button {
-        padding: 0.4em 0.8em;
-        font-size: 0.9em;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        margin: 0 0.3em;
-    }
-    #topBar button:hover {
-        background-color: #0056b3;
-    }
-    #timer {
-        font-size: 1.2em;
-        font-weight: bold;
     }
 </style>
 </head>
@@ -163,14 +166,17 @@ function resizePieces() {
     const w = puzzleWrapper.clientWidth;
     const h = puzzleWrapper.clientHeight;
 
+    // Asegura que el canvas no se desborde del wrapper
     canvas.width = w;
-    canvas.height = h;
+    canvas.height = h - parseInt(getComputedStyle(canvas).marginTop); // Resta el margen superior del canvas
+
     effectCanvas.width = w;
-    effectCanvas.height = h;
+    effectCanvas.height = h - parseInt(getComputedStyle(canvas).marginTop);
+
 
     // Calcular el tamaño de las piezas en función del nuevo tamaño del canvas
-    const pw = w / cols;
-    const ph = h / rows;
+    const pw = canvas.width / cols; // Usar el ancho actual del canvas
+    const ph = canvas.height / rows; // Usar el alto actual del canvas
 
     pieces.forEach(p => {
         // Guardar la posición relativa de la pieza antes de recalcular
@@ -191,8 +197,8 @@ function resizePieces() {
         } else {
             // Si no está colocada, ajustar su posición proporcionalmente
             // y asegurarse de que no se salga de los límites del canvas
-            p.x = Math.min(Math.max(p.x * (w / canvas.width), 0), w - pw);
-            p.y = Math.min(Math.max(p.y * (h / canvas.height), 0), h - ph);
+            p.x = Math.min(Math.max(p.x * (canvas.width / canvas.width), 0), canvas.width - pw);
+            p.y = Math.min(Math.max(p.y * (canvas.height / canvas.height), 0), canvas.height - ph);
         }
     });
     draw(); // Redibujar el puzzle después de redimensionar
@@ -200,19 +206,18 @@ function resizePieces() {
 
 function init() {
     puzzleEnded = false;
-    // El canvas y effectCanvas ya se redimensionan en resizePieces
-    // No necesitamos obtener clientWidth/clientHeight aquí de nuevo para el canvas
-    // La función resizePieces() se encargará de establecer los tamaños
-    // const w = puzzleWrapper.clientWidth, h = puzzleWrapper.clientHeight;
-    // canvas.width = w; canvas.height = h;
-    // effectCanvas.width = w; effectCanvas.height = h;
+    paused = false; // Asegurar que el puzzle no esté pausado al reiniciar
+    pauseBtn.textContent = "⏸️ Pausa"; // Resetear el texto del botón de pausa
 
-    const pw = canvas.width / cols; // Usar el ancho actual del canvas
-    const ph = canvas.height / rows; // Usar el alto actual del canvas
+    // Resetear el color del borde del puzzleWrapper al iniciar o reiniciar
+    puzzleWrapper.style.borderColor = "#333";
+
+    const pw = canvas.width / cols;
+    const ph = canvas.height / rows;
 
     pieces = []; placedCount = 0;
     completeMsg.style.display = "none";
-    puzzleWrapper.style.borderColor = "#333";
+    
     continueBtn.style.display = "none"; // Oculta el botón de continuar al inicio
 
     for (let r = 0; r < rows; r++) {
@@ -275,6 +280,9 @@ function onPointerDown(e) {
     // Invertir el orden para seleccionar las piezas que están más arriba (últimas en dibujarse)
     for (let i = pieces.length - 1; i >= 0; i--) {
         const p = pieces[i];
+        // Ajusta la verificación de posición para el canvas que ahora tiene un margin-top
+        // Ya no es necesario ajustar el y, porque el canvas en si mismo tiene un margin-top
+        // y sus coordenadas internas empiezan en 0,0 relativo a si mismo.
         if (!p.placed && x >= p.x && x <= p.x + p.w && y >= p.y && y <= p.y + p.h) {
             draggingPiece = p;
             offsetX = x - p.x;
@@ -482,12 +490,13 @@ function runConfetti() {
 }
 
 restartBtn.addEventListener("click", () => {
+    // Asegurarse de resetear el color del borde AQUI y luego iniciar
+    puzzleWrapper.style.borderColor = "#333"; // Resetea el color del borde
     paused = false;
     puzzleEnded = false;
     completeMsg.style.display = "none";
-    puzzleWrapper.style.borderColor = "#333";
     continueBtn.style.display = "none";
-    init();
+    init(); // Llama a init DESPUÉS de resetear el borde
     // Vuelve a empezar el bucle de dibujo si se detuvo
     requestAnimationFrame(draw);
 });
