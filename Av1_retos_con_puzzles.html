@@ -411,99 +411,8 @@ const retos = [
     }
 ];
 
-/* Variables para control */
-let indiceReto = 0;
-const retoDiv = document.getElementById("reto");
-const btnEnviar = document.createElement("button");
-btnEnviar.textContent = "Enviar";
-btnEnviar.className = "btn";
-
-const btnMostrarRespuesta = document.getElementById("btnMostrarRespuesta");
-const divRespuestaCorrecta = document.getElementById("respuestaCorrectaTexto");
-const btnNext = document.getElementById("btnNextAfterReto");
-const fuegosDiv = document.getElementById("fuegos");
-
 // Duración de la animación de fuegos artificiales (solo para retos de opción/texto)
 const DURACION_TOTAL_MS = 3000;
-
-/* Función para limpiar el reto y mostrar uno nuevo */
-function mostrarReto() {
-    // Limpiamos y ocultamos elementos visuales
-    btnNext.style.display = "none";
-    btnMostrarRespuesta.style.display = "none";
-    divRespuestaCorrecta.style.display = "none"; // Ocultar el mensaje de respuesta
-    divRespuestaCorrecta.textContent = "";
-    retoDiv.classList.remove("correct", "incorrect");
-    fuegosDiv.innerHTML = "";
-    fuegosDiv.style.display = "none"; // Asegura que los fuegos de la página principal estén ocultos
-
-    const reto = retos[indiceReto];
-    retoDiv.innerHTML = "";
-    retoDiv.setAttribute("tabindex", "0");
-    // Remueve la clase puzzle-active para retos que no son puzzles
-    retoDiv.classList.remove('puzzle-active');
-
-    let preguntaElem = document.createElement("h3");
-    preguntaElem.textContent = `${reto.pregunta}`;
-    retoDiv.appendChild(preguntaElem);
-
-    if (reto.tipo === "opcion" || reto.tipo === "opcion-multiple") {
-        const inputType = reto.multiple ? "checkbox" : "radio";
-        reto.opciones.forEach((opcion, i) => {
-            const divOpcion = document.createElement("div");
-            divOpcion.className = "respuesta";
-            const input = document.createElement("input");
-            input.type = inputType;
-            input.name = "op";
-            input.value = opcion;
-            input.id = "opcion" + i;
-            divOpcion.appendChild(input);
-
-            const label = document.createElement("label");
-            label.htmlFor = input.id;
-            label.textContent = opcion;
-            divOpcion.appendChild(label);
-            retoDiv.appendChild(divOpcion);
-        });
-        retoDiv.appendChild(btnEnviar);
-        btnEnviar.style.display = "inline-block";
-        btnEnviar.disabled = false;
-    }
-    else if (reto.tipo === "texto") {
-        const inputTexto = document.createElement("input");
-        inputTexto.type = "text";
-        inputTexto.id = "respuestaTexto";
-        inputTexto.autocomplete = "off";
-        inputTexto.spellcheck = false;
-        inputTexto.setAttribute("inputmode", "text");
-        // Se mantiene el font-size de 1.2em para el input de texto aquí, pero la regla CSS lo sobrescribirá a 1.3em
-        inputTexto.style.fontSize = "1.2em";
-        inputTexto.style.width = "100%";
-        inputTexto.placeholder = "Escriba su respuesta aquí...";
-        retoDiv.appendChild(inputTexto);
-        retoDiv.appendChild(btnEnviar);
-        btnEnviar.style.display = "inline-block";
-        btnEnviar.disabled = false;
-        setTimeout(() => inputTexto.focus(), 200);
-    }
-    else if (reto.tipo === "puzzle") {
-        // Añade la clase 'puzzle-active' cuando el reto es un puzzle
-        retoDiv.classList.add('puzzle-active');
-
-        const puzzleIframe = document.createElement("iframe");
-        puzzleIframe.id = "puzzleIframe";
-        puzzleIframe.src = reto.puzzleSrc;
-        puzzleIframe.frameBorder = "0";
-        puzzleIframe.allowFullscreen = true;
-        retoDiv.appendChild(puzzleIframe);
-
-        // Ocultamos btnEnviar, btnMostrarRespuesta y btnNext para los puzzles
-        // El avance lo gestiona el puzzle directamente al hacer clic en su botón "Continuar"
-        btnEnviar.style.display = "none";
-        btnMostrarRespuesta.style.display = "none";
-        btnNext.style.display = "none";
-    }
-}
 
 /* Animación de fuegos artificiales valencianos (Solo para retos de opción/texto, NO para puzzles) */
 function fuegosArtificiales() {
@@ -569,129 +478,211 @@ function vibrar() {
     if (navigator.vibrate) navigator.vibrate(300);
 }
 
-/* Función para verificar la respuesta (para retos de opción/texto) */
-function verificar() {
-    const reto = retos[indiceReto];
-    btnEnviar.disabled = true;
-    divRespuestaCorrecta.style.display = "none"; // Ocultar antes de mostrar nuevo mensaje
-    divRespuestaCorrecta.textContent = "";
-    retoDiv.classList.remove("correct", "incorrect");
-    fuegosDiv.innerHTML = "";
-    fuegosDiv.style.display = "none";
+// Envuelve todo el código que interactúa con el DOM dentro de DOMContentLoaded
+document.addEventListener("DOMContentLoaded", function() {
+    // Variables para control, ahora inicializadas DESPUÉS de que el DOM esté listo
+    let indiceReto = 0;
+    const retoDiv = document.getElementById("reto");
+    const btnEnviar = document.createElement("button");
+    btnEnviar.textContent = "Enviar";
+    btnEnviar.className = "btn";
 
-    btnNext.style.display = "none";
+    const btnMostrarRespuesta = document.getElementById("btnMostrarRespuesta");
+    const divRespuestaCorrecta = document.getElementById("respuestaCorrectaTexto");
+    const btnNext = document.getElementById("btnNextAfterReto");
+    const fuegosDiv = document.getElementById("fuegos");
 
-    let esCorrecto = false;
+    /* Función para limpiar el reto y mostrar uno nuevo */
+    function mostrarReto() {
+        // Limpiamos y ocultamos elementos visuales
+        btnNext.style.display = "none";
+        btnMostrarRespuesta.style.display = "none";
+        divRespuestaCorrecta.style.display = "none"; // Ocultar el mensaje de respuesta
+        divRespuestaCorrecta.textContent = "";
+        retoDiv.classList.remove("correct", "incorrect");
+        fuegosDiv.innerHTML = "";
+        fuegosDiv.style.display = "none"; // Asegura que los fuegos de la página principal estén ocultos
 
-    if (reto.tipo === "opcion") {
-        const seleccion = document.querySelector('input[name="op"]:checked');
-        if (!seleccion) {
-            alert("Por favor, seleccione una opción.");
+        const reto = retos[indiceReto];
+        retoDiv.innerHTML = "";
+        retoDiv.setAttribute("tabindex", "0");
+        // Remueve la clase puzzle-active para retos que no son puzzles
+        retoDiv.classList.remove('puzzle-active');
+
+        let preguntaElem = document.createElement("h3");
+        preguntaElem.textContent = `${reto.pregunta}`;
+        retoDiv.appendChild(preguntaElem);
+
+        if (reto.tipo === "opcion" || reto.tipo === "opcion-multiple") {
+            const inputType = reto.multiple ? "checkbox" : "radio";
+            reto.opciones.forEach((opcion, i) => {
+                const divOpcion = document.createElement("div");
+                divOpcion.className = "respuesta";
+                const input = document.createElement("input");
+                input.type = inputType;
+                input.name = "op";
+                input.value = opcion;
+                input.id = "opcion" + i;
+                divOpcion.appendChild(input);
+
+                const label = document.createElement("label");
+                label.htmlFor = input.id;
+                label.textContent = opcion;
+                divOpcion.appendChild(label);
+                retoDiv.appendChild(divOpcion);
+            });
+            retoDiv.appendChild(btnEnviar);
+            btnEnviar.style.display = "inline-block";
             btnEnviar.disabled = false;
-            return;
         }
-        esCorrecto = reto.correctas.includes(seleccion.value);
-    } else if (reto.tipo === "opcion-multiple") {
-        const checks = Array.from(document.querySelectorAll('input[name="op"]:checked')).map(i => i.value);
-        if (checks.length === 0) {
-            alert("Por favor, seleccione al menos una opción.");
+        else if (reto.tipo === "texto") {
+            const inputTexto = document.createElement("input");
+            inputTexto.type = "text";
+            inputTexto.id = "respuestaTexto";
+            inputTexto.autocomplete = "off";
+            inputTexto.spellcheck = false;
+            inputTexto.setAttribute("inputmode", "text");
+            inputTexto.style.fontSize = "1.2em";
+            inputTexto.style.width = "100%";
+            inputTexto.placeholder = "Escriba su respuesta aquí...";
+            retoDiv.appendChild(inputTexto);
+            retoDiv.appendChild(btnEnviar);
+            btnEnviar.style.display = "inline-block";
             btnEnviar.disabled = false;
-            return;
+            setTimeout(() => inputTexto.focus(), 200);
         }
-        esCorrecto = reto.correctas.every(c => checks.includes(c)) && checks.every(s => reto.correctas.includes(s));
-    } else if (reto.tipo === "texto") {
-        // Para retos de texto, la lógica actual simplemente los marca como correctos.
-        // Si necesitas verificación de texto, se debe añadir aquí.
-        const inputTexto = document.getElementById("respuestaTexto");
-        // Ejemplo de verificación simple (sin importar mayúsculas/minúsculas y quitando espacios extra)
-        const respuestaUsuario = inputTexto.value.trim().toLowerCase();
-        const respuestaCorrecta = reto.correctaTexto.trim().toLowerCase();
-        esCorrecto = true;
+        else if (reto.tipo === "puzzle") {
+            // Añade la clase 'puzzle-active' cuando el reto es un puzzle
+            retoDiv.classList.add('puzzle-active');
+
+            const puzzleIframe = document.createElement("iframe");
+            puzzleIframe.id = "puzzleIframe"; // Este ID está bien si esta página es independiente
+            puzzleIframe.src = reto.puzzleSrc;
+            puzzleIframe.frameBorder = "0";
+            puzzleIframe.allowFullscreen = true;
+            retoDiv.appendChild(puzzleIframe);
+
+            // Ocultamos btnEnviar, btnMostrarRespuesta y btnNext para los puzzles
+            // El avance lo gestiona el puzzle directamente al hacer clic en su botón "Continuar"
+            btnEnviar.style.display = "none";
+            btnMostrarRespuesta.style.display = "none";
+            btnNext.style.display = "none";
+        }
     }
 
-    if (esCorrecto) {
-        retoDiv.classList.add("correct");
-        fuegosArtificiales(); // Activar fuegos para preguntas de opción/texto
-        btnMostrarRespuesta.style.display = "inline-block"; // Mostrar botón de respuesta
-        setTimeout(() => {
-            btnNext.style.display = "inline-block"; // Mostrar botón siguiente
-        }, DURACION_TOTAL_MS); // Espera a que los fuegos terminen
-    } else {
-        retoDiv.classList.add("incorrect");
-        vibrar(); // Vibrar al fallar en preguntas de opción/texto
-        btnEnviar.disabled = false;
-        btnMostrarRespuesta.style.display = "inline-block"; // Mostrar botón de respuesta
-        setTimeout(() => {
-            // No ocultar el mensaje de respuesta incorrecta si lo volvemos a mostrar con el botón.
-            // La visibilidad se controla al inicio de `mostrarReto` y `verificar`.
-        }, 2000); // Ocultar mensaje de incorrecto después de 2 segundos (ya no se muestra automáticamente)
-    }
-}
+    /* Función para verificar la respuesta (para retos de opción/texto) */
+    function verificar() {
+        const reto = retos[indiceReto];
+        btnEnviar.disabled = true;
+        divRespuestaCorrecta.style.display = "none"; // Ocultar antes de mostrar nuevo mensaje
+        divRespuestaCorrecta.textContent = "";
+        retoDiv.classList.remove("correct", "incorrect");
+        fuegosDiv.innerHTML = "";
+        fuegosDiv.style.display = "none";
 
-/* Mostrar respuesta correcta (para retos de opción/texto) */
-btnMostrarRespuesta.addEventListener("click", () => {
-    const reto = retos[indiceReto];
-    if (reto.tipo === "opcion" || reto.tipo === "opcion-multiple") {
-        divRespuestaCorrecta.textContent = "Respuesta correcta: " + reto.correctas.join(", ");
-    } else if (reto.tipo === "texto") {
-        divRespuestaCorrecta.textContent = "Respuesta correcta: " + reto.correctaTexto;
-    } else {
-        divRespuestaCorrecta.textContent = "No hay respuesta correcta disponible para este tipo de reto.";
-    }
-    divRespuestaCorrecta.style.display = "block"; // Asegurar que se muestre
-});
+        btnNext.style.display = "none";
 
-/* Botón siguiente (solo para retos de opción/texto) */
-btnNext.addEventListener("click", () => {
-    indiceReto++;
-    if (indiceReto >= retos.length) {
-        alert("¡Has terminado todos los retos de la Aventura 1!");
-        indiceReto = 0; // Opcional: Reiniciar o redirigir al final de la aventura
-    }
-    mostrarReto();
-});
+        let esCorrecto = false;
 
-/* Botón enviar (solo para retos de opción/texto) */
-btnEnviar.addEventListener("click", verificar);
+        if (reto.tipo === "opcion") {
+            const seleccion = document.querySelector('input[name="op"]:checked');
+            if (!seleccion) {
+                alert("Por favor, seleccione una opción.");
+                btnEnviar.disabled = false;
+                return;
+            }
+            esCorrecto = reto.correctas.includes(seleccion.value);
+        } else if (reto.tipo === "opcion-multiple") {
+            const checks = Array.from(document.querySelectorAll('input[name="op"]:checked')).map(i => i.value);
+            if (checks.length === 0) {
+                alert("Por favor, seleccione al menos una opción.");
+                btnEnviar.disabled = false;
+                return;
+            }
+            esCorrecto = reto.correctas.every(c => checks.includes(c)) && checks.every(s => reto.correctas.includes(s));
+        } else if (reto.tipo === "texto") {
+            const inputTexto = document.getElementById("respuestaTexto");
+            const respuestaUsuario = inputTexto.value.trim().toLowerCase();
+            const respuestaCorrecta = reto.correctaTexto.trim().toLowerCase();
+            esCorrecto = (respuestaUsuario === respuestaCorrecta); // Ahora sí verifica para texto
+        }
 
-/* Listener para mensajes del iframe del puzzle */
-window.addEventListener("message", (event) => {
-    // Opcional: Puedes añadir una verificación de origen si tus puzzles se alojan en un dominio diferente
-    // if (event.origin !== "https://valenciavguides.github.io") return;
+        if (esCorrecto) {
+            retoDiv.classList.add("correct");
+            fuegosArtificiales(); // Activar fuegos para preguntas de opción/texto
+            btnMostrarRespuesta.style.display = "inline-block"; // Mostrar botón de respuesta
+            setTimeout(() => {
+                btnNext.style.display = "inline-block"; // Mostrar botón siguiente
+            }, DURACION_TOTAL_MS); // Espera a que los fuegos terminen
+        } else {
+            retoDiv.classList.add("incorrect");
+            vibrar(); // Vibrar al fallar en preguntas de opción/texto
+            btnEnviar.disabled = false;
+            btnMostrarRespuesta.style.display = "inline-block"; // Mostrar botón de respuesta
+        }
+    }
 
-    // Mensaje del puzzle para que la página principal reaccione con el borde de éxito
-    if (event.data === "puzzle-state-completed") {
-        console.log('Mensaje recibido: Puzzle completado. Poniendo borde verde.');
-        retoDiv.classList.add("correct"); // Borde verde
-        retoDiv.classList.remove("incorrect"); // Asegurarse de quitar el borde rojo si estaba
-        // divRespuestaCorrecta.textContent = "🎉 ¡Puzzle Resuelto con Éxito!"; // Ya no se muestra automáticamente
-        // divRespuestaCorrecta.style.display = "block"; // Ya no se muestra automáticamente
-    }
-    // Mensaje del puzzle para que la página principal reaccione con el borde de fallo por tiempo
-    else if (event.data === "puzzle-state-timeout") {
-        console.log('Mensaje recibido: Tiempo del puzzle agotado. Poniendo borde rojo y vibrando.');
-        retoDiv.classList.add("incorrect"); // Borde rojo
-        retoDiv.classList.remove("correct"); // Asegurarse de quitar el borde verde si estaba
-        vibrar(); // Vibración al agotar el tiempo
-        // divRespuestaCorrecta.textContent = "⏰ Tiempo agotado. Gracias por participar."; // Ya no se muestra automáticamente
-        // divRespuestaCorrecta.style.display = "block"; // Ya no se muestra automáticamente
-    }
-    // Esta es la señal FINAL del puzzle para AVANZAR al siguiente reto
-    // Se activa cuando el usuario hace clic en el botón "Continuar" dentro del puzzle.
-    else if (event.data === "advance-to-next") {
-        console.log('Mensaje recibido: Avance al siguiente reto solicitado por el puzzle.');
-        divRespuestaCorrecta.style.display = "none"; // Ocultar mensaje al avanzar
-        indiceReto++; // Avanza al siguiente reto
+    /* Mostrar respuesta correcta (para retos de opción/texto) */
+    btnMostrarRespuesta.addEventListener("click", () => {
+        const reto = retos[indiceReto];
+        if (reto.tipo === "opcion" || reto.tipo === "opcion-multiple") {
+            divRespuestaCorrecta.textContent = "Respuesta correcta: " + reto.correctas.join(", ");
+        } else if (reto.tipo === "texto") {
+            divRespuestaCorrecta.textContent = "Respuesta correcta: " + reto.correctaTexto;
+        } else {
+            divRespuestaCorrecta.textContent = "No hay respuesta correcta disponible para este tipo de reto.";
+        }
+        divRespuestaCorrecta.style.display = "block"; // Asegurar que se muestre
+    });
+
+    /* Botón siguiente (solo para retos de opción/texto) */
+    btnNext.addEventListener("click", () => {
+        indiceReto++;
         if (indiceReto >= retos.length) {
             alert("¡Has terminado todos los retos de la Aventura 1!");
             indiceReto = 0; // Opcional: Reiniciar o redirigir al final de la aventura
         }
-        mostrarReto(); // Carga y muestra el siguiente reto
-    }
-});
+        mostrarReto();
+    });
 
-/* Mostrar primer reto al cargar */
-mostrarReto();
+    /* Botón enviar (solo para retos de opción/texto) */
+    btnEnviar.addEventListener("click", verificar);
+
+    /* Listener para mensajes del iframe del puzzle */
+    window.addEventListener("message", (event) => {
+        // Opcional: Puedes añadir una verificación de origen si tus puzzles se alojan en un dominio diferente
+        // if (event.origin !== "https://valenciavguides.github.io") return;
+
+        // Mensaje del puzzle para que la página principal reaccione con el borde de éxito
+        if (event.data === "puzzle-state-completed") {
+            console.log('Mensaje recibido: Puzzle completado. Poniendo borde verde.');
+            retoDiv.classList.add("correct"); // Borde verde
+            retoDiv.classList.remove("incorrect"); // Asegurarse de quitar el borde rojo si estaba
+        }
+        // Mensaje del puzzle para que la página principal reaccione con el borde de fallo por tiempo
+        else if (event.data === "puzzle-state-timeout") {
+            console.log('Mensaje recibido: Tiempo del puzzle agotado. Poniendo borde rojo y vibrando.');
+            retoDiv.classList.add("incorrect"); // Borde rojo
+            retoDiv.classList.remove("correct"); // Asegurarse de quitar el borde verde si estaba
+            vibrar(); // Vibración al agotar el tiempo
+        }
+        // Esta es la señal FINAL del puzzle para AVANZAR al siguiente reto
+        // Se activa cuando el usuario hace clic en el botón "Continuar" dentro del puzzle.
+        else if (event.data === "advance-to-next") {
+            console.log('Mensaje recibido: Avance al siguiente reto solicitado por el puzzle.');
+            divRespuestaCorrecta.style.display = "none"; // Ocultar mensaje al avanzar
+            indiceReto++; // Avanza al siguiente reto
+            if (indiceReto >= retos.length) {
+                alert("¡Has terminado todos los retos de la Aventura 1!");
+                indiceReto = 0; // Opcional: Reiniciar o redirigir al final de la aventura
+            }
+            mostrarReto(); // Carga y muestra el siguiente reto
+        }
+    });
+
+    /* Mostrar primer reto al cargar */
+    mostrarReto();
+}); // Cierre del DOMContentLoaded listener
 
 </script>
 </body>
